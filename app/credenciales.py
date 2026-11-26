@@ -9,12 +9,13 @@ import tempfile
 import threading
 
 PREFIJO = "dpapi:v1:"
+FERNET = "fernet:v1:"
 _lock = threading.RLock()
 
 
 class ErrorCredenciales(Exception):
     def __init__(self):
-        super().__init__("No se pudieron proteger o recuperar las credenciales de Windows.")
+        super().__init__("No se pudieron proteger o recuperar las credenciales.")
 
 
 def _dpapi(valor: bytes, proteger: bool) -> bytes:
@@ -44,8 +45,22 @@ def _dpapi(valor: bytes, proteger: bool) -> bytes:
         kernel.LocalFree(salida.pbData)
 
 
+def cifrador():
+    from cryptography.fernet import Fernet
+
+    clave = os.environ.get("COMPRESSO_CREDENTIAL_KEY")
+    if not clave:
+        raise ErrorCredenciales()
+    return Fernet(clave.encode("ascii"))
+
+
 def recuperar(valor: str) -> str:
-    if not valor.startswith(PREFIJO):
+    if valor.startswith(FERNET):
+        try:
+            return cifrador().decrypt(valor[len(FERNET):].encode("ascii")).decode("utf-8")
+        except Exception:
+            raise ErrorCredenciales() from None
+    if not valor.startswith((PREFIJO, FERNET)):
         return valor
     try:
         return _dpapi(base64.b64decode(valor[len(PREFIJO):], validate=True), False).decode("utf-8")
@@ -55,6 +70,8 @@ def recuperar(valor: str) -> str:
 
 def proteger(valor: str) -> str:
     try:
+        if os.name != "nt":
+            return FERNET + cifrador().encrypt(valor.encode()).decode("ascii")
         protegido = PREFIJO + base64.b64encode(_dpapi(valor.encode("utf-8"), True)).decode("ascii")
         if recuperar(protegido) != valor:
             raise ErrorCredenciales()
@@ -100,7 +117,7 @@ def afectadas(ruta: Path, claves) -> list[str]:
         resultado = []
         for clave in claves:
             valor = datos.get(clave, "")
-            if isinstance(valor, str) and valor.startswith(PREFIJO):
+            if isinstance(valor, str) and valor.startswith((PREFIJO, FERNET)):
                 try:
                     recuperar(valor)
                 except ErrorCredenciales:
@@ -143,7 +160,7 @@ def leer(ruta: Path, claves) -> dict:
             if not isinstance(valor, str):
                 raise ErrorCredenciales()
             claros[clave] = recuperar(valor)
-            migrar |= bool(valor) and not valor.startswith(PREFIJO)
+            migrar |= bool(valor) and not valor.startswith((PREFIJO, FERNET))
         if migrar:
             guardar(ruta, claros, claves)
         return claros

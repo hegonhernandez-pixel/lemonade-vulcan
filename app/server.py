@@ -1,4 +1,4 @@
-"""Dcrypto Studio web: una capa sobre pipeline/ para escribir, editar y producir videos.
+"""CompressOS Studio: interfaz para escribir, editar y producir videos.
 
   python app/server.py            ->  http://127.0.0.1:8765  (solo en este equipo)
   python app/server.py --puerto 8080 --sin-navegador   (el puerto por defecto está en app/config.py)
@@ -26,7 +26,7 @@ RAIZ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(RAIZ))
 
 from fastapi import Body, FastAPI, File, Form, HTTPException, UploadFile  # noqa: E402
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse  # noqa: E402
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse, Response  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 
 from app import credenciales, marca_personal
@@ -34,13 +34,13 @@ from app.seguridad_local import SeguridadLocal
 from app.subidas import LimiteSubidaPropios
 from app import config  # noqa: E402
 from app import licencia, preparar  # noqa: E402
-from app import actualizaciones, cierre  # noqa: E402
+from app import auth, cierre  # noqa: E402
 from app.version import URL_APOYO, VERSION  # noqa: E402
 from app import escribir as escritura  # noqa: E402
 from app import narracion  # noqa: E402
 from app import trabajos  # noqa: E402
 from pipeline import guion as mod_guion  # noqa: E402
-from pipeline import medios
+from pipeline import medios, vulkan
 from pipeline import rutas  # noqa: E402,I001  (primero: fija HF_HOME en modo instalado)
 from pipeline import imagenes, marca, musica, personajes, subtitulos, textos, voz, voz_local  # noqa: E402
 from pipeline.producir import Opciones, carpeta  # noqa: E402
@@ -68,19 +68,21 @@ AJUSTES_BASE = {
     "calidad": "rapida",  # imágenes: rapida (SDXL-Turbo) o alta (SDXL base); ver pipeline/imagenes.py
     "subtitulos": True,
     "marca_agua": False,
-    "portada": False,  # miniatura como primer cuadro (0,6 s), para elegirla en la app de YouTube
+    "portada": True,  # miniatura como primer cuadro (0,6 s), para elegirla en la app de YouTube
     "estilo_subtitulos": {},  # vacío = el estilo de siempre (ver pipeline/subtitulos.py)
     "frase_cierre": {"es": "", "en": ""},  # última frase de los Shorts (el lema del canal); vacía = sin frase fija
     "estilo_marca": {},  # tamaño, esquina y margen de la marca de agua; vacío = mediana, arriba a la derecha, 140 px
     "cierre_tarjeta": True,  # tarjeta de cierre (logo + nombre, 2,5 s) al final; cada guion puede cambiarlo ("cierre")
     "cierre_nombre": marca.CIERRE_TEXTO,  # el nombre bajo el logo en la tarjeta de cierre
-    "demo": False,
+    "demo": rutas.LINUX and os.environ.get("COMPRESSO_LOCAL_DEMO") == "1",
     # IA para "Generar guion" y "Traducir": claude_code | anthropic | openai | ninguno (ver app/escribir.py)
-    "proveedor_ia": "claude_code",
+    "proveedor_ia": "gemini" if rutas.LINUX else "claude_code",
+    "gemini_api_key": "", "gemini_modelo": "gemini-2.5-flash",
+    "ollama_modelo": "qwen3:4b", "buscar_google": True,
     "anthropic_api_key": "", "anthropic_modelo": "claude-opus-5-5",
     "openai_api_key": "", "openai_modelo": "gpt-5",
 }
-CLAVES_API = ("anthropic_api_key", "openai_api_key")  # nunca salen del servidor
+CLAVES_API = ("anthropic_api_key", "openai_api_key", "gemini_api_key")  # nunca salen del servidor
 VOCES_RESPALDO = ["es-CO-GonzaloNeural", "es-CO-SalomeNeural", "es-MX-JorgeNeural", "es-MX-DaliaNeural",
                   "en-US-AndrewNeural", "en-US-GuyNeural", "en-US-AriaNeural", "en-GB-RyanNeural"]
 PRUEBA_SEG = 15.0
@@ -112,10 +114,13 @@ class Idioma:
         await self.app(scope, receive, send)
 
 
-api = FastAPI(title="Dcrypto Studio", default_response_class=Respuesta)
+api = FastAPI(title="CompressOS Studio", default_response_class=Respuesta,
+              docs_url=None, redoc_url=None, openapi_url=None)
 api.add_middleware(Idioma)
 api.add_middleware(LimiteSubidaPropios)
+api.add_middleware(auth.Sesion)
 api.add_middleware(SeguridadLocal)
+api.include_router(auth.router)
 
 from app.estudio import router as estudio_router
 api.include_router(estudio_router)
@@ -123,7 +128,7 @@ api.include_router(estudio_router)
 
 @api.get("/api/salud")
 def salud():
-    return {"aplicacion": "Dcrypto Studio", "estado": "ok"}
+    return {"aplicacion": "CompressOS Studio" if rutas.LINUX else "Dcrypto Studio", "estado": "ok"}
 
 
 @api.get("/api/credenciales/estado")
@@ -137,12 +142,12 @@ def estado_credenciales():
 
 @api.post("/api/credenciales/reemplazar")
 def recuperar_credencial(cuerpo: dict = Body(...)):
-    if set(cuerpo) != {"proveedor", "nueva_clave"} or cuerpo.get("proveedor") not in ("anthropic", "openai"):
+    if set(cuerpo) != {"proveedor", "nueva_clave"} or cuerpo.get("proveedor") not in escritura.VAR_ENTORNO:
         raise HTTPException(400, "Solicitud de recuperación no válida.")
     try:
         credenciales.reemplazar_afectada(AJUSTES, cuerpo["proveedor"] + "_api_key", cuerpo["nueva_clave"], CLAVES_API)
     except credenciales.ErrorCredenciales:
-        raise HTTPException(503, "No se pudo reemplazar la credencial. La configuración original se conservó; comprueba que la credencial siga afectada y que DPAPI esté disponible.") from None
+        raise HTTPException(503, "No se pudo reemplazar la credencial. La configuración original se conservó; comprueba que la credencial siga afectada y que el cifrado esté configurado.") from None
     return {"estado": "reemplazada"}
 
 
@@ -174,7 +179,7 @@ def ajustes() -> dict:
         # solo claves vigentes (los ajustes viejos traían "modelo" y "pasos")
         return {**AJUSTES_BASE, **{k: v for k, v in guardados.items() if k in AJUSTES_BASE}}
     except credenciales.ErrorCredenciales:
-        raise HTTPException(503, "No se pudieron proteger o recuperar las credenciales de Windows. Los ajustes originales se conservaron.") from None
+        raise HTTPException(503, "No se pudieron proteger o recuperar las credenciales del servidor. Los ajustes originales se conservaron.") from None
     except (FileNotFoundError, json.JSONDecodeError):
         return dict(AJUSTES_BASE)
 
@@ -188,6 +193,9 @@ def opciones() -> Opciones:
                     # ajustes de antes (sin estas claves): la tarjeta de siempre
                     cierre=bool(a.get("cierre_tarjeta", True)),
                     **({"cierre_nombre": str(a["cierre_nombre"] or "")} if "cierre_nombre" in a else {}))
+
+
+api.state.opciones_render = opciones
 
 
 def ruta_guion(slug: str) -> Path:
@@ -1049,11 +1057,18 @@ def _sobrantes() -> list[Path]:
 
 @api.get("/api/espacio")
 def espacio():
-    from huggingface_hub.constants import HF_HUB_CACHE
+    modelos = rutas.MODELOS
+    externos = set()
+    if vulkan.activo():
+        externos = {p for k in vulkan.PERFILES if (p := vulkan.ruta_modelo(k))
+                    and p.is_file() and not p.is_relative_to(modelos)}
+    else:
+        from huggingface_hub.constants import HF_HUB_CACHE
 
+        modelos = Path(HF_HUB_CACHE)
     return {
         "salida": _peso(SALIDA), "papelera": _peso(PAPELERA) if PAPELERA.exists() else 0,
-        "modelos": _peso(Path(HF_HUB_CACHE)) if Path(HF_HUB_CACHE).exists() else 0, "ruta_modelos": str(HF_HUB_CACHE),
+        "modelos": _peso(modelos) + sum(_peso(p) for p in externos), "ruta_modelos": str(modelos),
         "liberable": sum(_peso(f) for f in _sobrantes()) + (_peso(PAPELERA) if PAPELERA.exists() else 0),
     }
 
@@ -1079,7 +1094,13 @@ def abrir_carpeta(slug: str):
     dest = SALIDA / (data.get("slug") or slug)
     if not hasattr(os, "startfile"):
         raise HTTPException(400, Texto("srv.solo_windows"))
-    os.startfile(dest if dest.exists() else GUIONES)
+    carpeta_local = dest if dest.exists() else GUIONES
+    if rutas.LINUX:
+        if not shutil.which("xdg-open"):
+            raise HTTPException(503, "xdg-open no está disponible.")
+        subprocess.Popen(["xdg-open", str(carpeta_local)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    else:
+        os.startfile(carpeta_local)
     return {"ok": True, "carpeta": str(dest)}
 
 
@@ -1101,6 +1122,33 @@ def catalogo_musica() -> dict:
         # mp3 sueltos en assets/musica/ (de antes de las carpetas por mood)
         "sueltas": [pista(p) for p in sorted(MUSICA.iterdir()) if p.suffix.lower() in musica.EXTENSIONES],
     }
+
+
+@api.get("/api/voz/prueba")
+def probar_voz(id: str, rate: str = "+0%"):
+    if not re.fullmatch(r"(es|en)-[A-Z]{2}-[A-Za-z0-9]+Neural", id) or not re.fullmatch(r"[+-]\d{1,2}%", rate):
+        raise HTTPException(400, "Selecciona una voz Edge TTS y una velocidad válida.")
+    with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as archivo:
+        ruta = Path(archivo.name)
+    try:
+        texto = ("Esta es una prueba de voz para tu próximo video." if id.startswith("es-") else
+                 "This is a voice preview for your next video.")
+        voz._edge(texto, id, ruta, rate)
+        return Response(ruta.read_bytes(), media_type="audio/mpeg")
+    except Exception as exc:
+        logging.getLogger(__name__).info("Falló el monitor Edge TTS: %s", type(exc).__name__)
+        raise HTTPException(503, "Edge TTS no pudo sintetizar la prueba.") from None
+    finally:
+        ruta.unlink(missing_ok=True)
+
+
+@api.get("/api/marca/cierre")
+def vista_cierre(formato: str = "short", nombre: str = ""):
+    from pipeline.miniatura import TAMANO
+
+    if formato not in TAMANO:
+        raise HTTPException(400, "Formato inválido.")
+    return FileResponse(marca.tarjeta_cierre(TAMANO[formato], nombre), media_type="image/png")
 
 
 @api.get("/api/musica")
@@ -1187,8 +1235,10 @@ def ajustes_publicos(a: dict) -> dict:
     pub["marca_agua"] = bool(a["marca_agua"]) and bool(pub["logo_marca"])
     pub["kokoro_instalado"] = voz_local.disponible()
     pub["version"] = VERSION
-    pub["url_apoyo"] = URL_APOYO
+    pub["url_apoyo"] = "" if rutas.LINUX else URL_APOYO
     pub["instalado"] = rutas.INSTALADO
+    pub["linux"] = rutas.LINUX
+    pub["auth"] = auth.activa()
     url = config.FEEDBACK_URL.strip()
     pub["feedback_url"] = url if re.match(r"^https?://", url) else ""  # solo lectura: el PUT no la guarda
     pub["ia"] = {
@@ -1249,7 +1299,7 @@ def guardar_ajustes(nuevos: dict = Body(...)):
     try:
         credenciales.guardar(AJUSTES, a, CLAVES_API)
     except credenciales.ErrorCredenciales:
-        raise HTTPException(503, "No se pudieron proteger las credenciales de Windows. No se guardaron cambios.") from None
+        raise HTTPException(503, "No se pudieron proteger las credenciales del servidor. No se guardaron cambios.") from None
     return ajustes_publicos(a)
 
 
@@ -1269,6 +1319,8 @@ def _gpu() -> dict | None:
 
 @api.get("/api/setup")
 def ver_setup(fresco: bool = False):
+    if rutas.LINUX:
+        raise HTTPException(404, "Consulta el estado del equipo en Ajustes.")
     if fresco:
         preparar.equipo(fresco=True)
     return preparar.PREPARADOR.estado()
@@ -1276,6 +1328,8 @@ def ver_setup(fresco: bool = False):
 
 @api.post("/api/setup/iniciar")
 def iniciar_setup(cuerpo: dict = Body(...)):
+    if rutas.LINUX:
+        raise HTTPException(404)
     perfil = cuerpo.get("perfil", "completo")
     if perfil not in ("voz", "esencial", "completo"):
         raise HTTPException(400, Texto("srv.setup_perfil"))
@@ -1288,6 +1342,8 @@ def iniciar_setup(cuerpo: dict = Body(...)):
 
 @api.post("/api/setup/pausar")
 def pausar_setup():
+    if rutas.LINUX:
+        raise HTTPException(404)
     preparar.PREPARADOR.pausar()
     return {"ok": True}
 
@@ -1295,6 +1351,8 @@ def pausar_setup():
 @api.post("/api/setup/verificar")
 def verificar_setup():
     """En segundo plano: carga los modelos (unos minutos la primera vez). La interfaz sigue el estado."""
+    if rutas.LINUX:
+        raise HTTPException(404)
     p = preparar.PREPARADOR
     if p.fase in ("descargando", "verificando"):
         raise HTTPException(409, Texto("srv.setup_ocupado"))
@@ -1307,6 +1365,8 @@ def verificar_setup():
 
 @api.post("/api/setup/visto")
 def setup_visto():
+    if rutas.LINUX:
+        raise HTTPException(404)
     if licencia.comercial() and not preparar.PREPARADOR.completo():
         raise HTTPException(409, Texto("srv.setup_incompleto"))
     preparar.PREPARADOR.guardar(visto=True)
@@ -1381,7 +1441,8 @@ def licencia_visto():
 @api.get("/api/sistema")
 def sistema():
     return {
-        "gpu": _gpu(),
+        "vulkan": vulkan.estado() if vulkan.activo() else None,
+        "gpu": None if vulkan.activo() else _gpu(),
         "torch": importlib.util.find_spec("torch") is not None,
         "modelo_cargado": imagenes.modelo_cargado(),
         "descarga": imagenes.descarga,  # {modelo, gb, total} mientras baja un modelo
@@ -1416,6 +1477,25 @@ def liberar_gpu():
     return {"ok": True}
 
 
+@api.post("/api/prompt/mejorar")
+def mejorar_prompt(cuerpo: dict = Body(...)):
+    exigir_ia()
+    texto = cuerpo.get("texto")
+    if not isinstance(texto, str) or not 1 <= len(texto.strip()) <= 2000:
+        raise HTTPException(400, "Escribe un prompt de entre 1 y 2000 caracteres.")
+    instruccion = ("Improve this prompt for Stable Diffusion. Preserve the subject and setting, describe the composition, "
+                   "lighting and style concretely, use English, and keep it under 65 words. "
+                   'Return only a JSON object with one string field named "prompt". Input: ')
+    try:
+        respuesta = escritura.nueva_llamada(ajustes()).correr(instruccion + json.dumps(texto), buscar=False)
+        mejorado = mod_guion.desde_texto(respuesta)["prompt"]
+        if not isinstance(mejorado, str) or not mejorado.strip() or len(mejorado) > 2000:
+            raise ValueError("prompt")
+    except Exception:
+        raise HTTPException(502, "El proveedor no devolvió un prompt válido.") from None
+    return {"prompt": mejorado.strip()}
+
+
 @api.post("/api/prompt/clip")
 def prompt_clip(cuerpo: dict = Body(...)):
     """Estudio de imágenes: ¿el prompt pasa del límite de CLIP? {"aviso": null} si cabe."""
@@ -1438,15 +1518,10 @@ def cerrar_app(cuerpo: dict = Body(default={})):
     return cierre.cerrar()
 
 
-@api.get("/api/version/nueva")
-def version_nueva():
-    """Aviso de versión nueva (app/actualizaciones.py). Sin internet o con cualquier fallo: {"nueva": null}."""
-    return {"version": VERSION, "nueva": actualizaciones.consultar()}
-
-
 # ---------- archivos ----------
 
-rutas.crear_estructura()  # la primera vez (instalado): guiones, salida, música por mood, personajes…
+rutas.crear_estructura()
+musica.preparar_catalogo()
 api.mount("/salida", StaticFiles(directory=SALIDA), name="salida")
 if n := imagenes.migrar_propios(SALIDA):
     print(f"propios: {n} archivos movidos de salida/<slug>/propios/ a assets/propios/<slug>/", flush=True)
@@ -1476,7 +1551,7 @@ def diccionario():
 
 @api.get("/favicon.ico")
 def favicon():
-    return FileResponse(LOGOS / "logo_dcrypto_studio_256.png", media_type="image/png")
+    return FileResponse(LOGOS / "compresso.png", media_type="image/png")
 
 
 @api.get("/estudio.js")
@@ -1530,13 +1605,12 @@ def main():
     PUERTO = a.puerto
     if ocupado(PUERTO):
         # lo normal: la app instalada (que también usa 8765) está abierta. No abrir el navegador en su puerto.
-        sys.exit(f"\nEl puerto {PUERTO} ya está en uso (¿está abierto Dcrypto Studio instalado?).\n"
+        sys.exit(f"\nEl puerto {PUERTO} ya está en uso (¿hay otra instancia abierta?).\n"
                  f"Arranca el de desarrollo en otro:  python app/server.py --puerto 8780\n")
 
     trabajos.iniciar(ruta_guion)
-    actualizaciones.consultar_en_segundo_plano()  # una vez por arranque; sin red no pasa nada
     silenciar_conexiones_cortadas()
-    print(f"\nDcrypto Studio\n  en esta laptop:  http://127.0.0.1:{PUERTO}")
+    print(f"\nCompressOS Studio\n  en esta laptop:  http://127.0.0.1:{PUERTO}")
     print("  Ctrl+C para cerrar\n")
     if not a.sin_navegador:
         threading.Timer(1.5, webbrowser.open, [f"http://127.0.0.1:{PUERTO}"]).start()

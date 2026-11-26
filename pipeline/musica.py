@@ -25,6 +25,20 @@ def pistas(mood: str) -> list[Path]:
     return sorted(p for p in d.iterdir() if p.suffix.lower() in EXTENSIONES) if d.is_dir() else []
 
 
+def preparar_catalogo():
+    """Ofrece una pista original en cada categoría que todavía está vacía."""
+    for mood in MOODS:
+        if pistas(mood):
+            continue
+        for origen in (RAIZ / "assets" / "musica-incluida" / mood).glob("*.mp3"):
+            destino = CARPETA / mood / origen.name
+            try:
+                with destino.open("xb") as archivo:
+                    archivo.write(origen.read_bytes())
+            except FileExistsError:
+                pass
+
+
 def resolver(musica: str | None, slug: str) -> Path | None:
     """'musica' puede ser un mood ("tension") o una ruta. Para un mood se elige una pista de forma
     determinista por slug: la de mayor hash(slug + nombre). Así, mismo guion = misma pista, y

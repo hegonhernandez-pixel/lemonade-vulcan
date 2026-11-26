@@ -21,6 +21,7 @@ from pathlib import Path
 
 from app.ia_anthropic import LlamadaAnthropic
 from app.ia_openai import LlamadaOpenAI
+from app.ia_texto import LlamadaTexto
 from pipeline import guion as mod_guion
 from pipeline.subtitulos import ajuste_global
 from pipeline.textos import Error, ErrorEjecucion, Texto, Unidos, de, error
@@ -207,8 +208,8 @@ class Llamada:
 
 # ---------- elegir proveedor ----------
 
-PROVEEDORES = {"claude_code": "Claude Code", "anthropic": "Anthropic", "openai": "OpenAI", "ninguno": ""}
-VAR_ENTORNO = {"anthropic": "ANTHROPIC_API_KEY", "openai": "OPENAI_API_KEY"}
+PROVEEDORES = {"claude_code": "Claude Code", "anthropic": "Anthropic", "openai": "OpenAI", "gemini": "Gemini", "ollama": "Ollama", "ninguno": ""}
+VAR_ENTORNO = {"anthropic": "ANTHROPIC_API_KEY", "openai": "OPENAI_API_KEY", "gemini": "GEMINI_API_KEY"}
 
 
 def clave_api(ajustes: dict, proveedor: str) -> str:
@@ -228,6 +229,8 @@ def disponible(ajustes: dict) -> bool:
     p = ajustes.get("proveedor_ia")
     if p == "claude_code":
         return claude_instalado()
+    if p == "ollama":
+        return bool(ajustes.get("ollama_modelo"))
     if p in VAR_ENTORNO:
         return bool(clave_api(ajustes, p))
     return False
@@ -240,6 +243,11 @@ def nueva_llamada(ajustes: dict):
         return LlamadaAnthropic(clave_api(ajustes, p), ajustes.get("anthropic_modelo"), Cancelado)
     if p == "openai" and clave_api(ajustes, p):
         return LlamadaOpenAI(clave_api(ajustes, p), ajustes.get("openai_modelo"), Cancelado)
+    if p == "gemini" and clave_api(ajustes, p):
+        return LlamadaTexto(p, ajustes.get("gemini_modelo") or "gemini-2.5-flash", Cancelado,
+                           key=clave_api(ajustes, p), buscar_google=bool(ajustes.get("buscar_google")))
+    if p == "ollama" and ajustes.get("ollama_modelo"):
+        return LlamadaTexto(p, ajustes["ollama_modelo"], Cancelado)
     if p == "claude_code":
         return Llamada()
     raise ErrorEjecucion(Texto("srv.sin_ia"))

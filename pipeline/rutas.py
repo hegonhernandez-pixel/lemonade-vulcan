@@ -14,12 +14,14 @@ from pathlib import Path
 
 APP = Path(__file__).resolve().parent.parent
 
+LINUX = os.environ.get("COMPRESSO_LINUX") == "1"
 _datos = os.environ.get("DCRYPTO_DATA", "").strip()
 # Solo un checkout local sin marca comercial conserva el modo desarrollador.
 # El paquete queda cerrado incluso al iniciar server.py sin el lanzador o sin DCRYPTO_DATA.
-COMERCIAL = bool(_datos) or (APP / ".comercial").is_file() or not (APP / ".git").exists()
+COMERCIAL = not LINUX and (bool(_datos) or (APP / ".comercial").is_file() or not (APP / ".git").exists())
 INSTALADO = COMERCIAL
-DATOS = (Path(_datos) if _datos else
+DATOS = (Path(os.environ.get("COMPRESSO_DATA_DIR") or Path(os.environ.get("XDG_DATA_HOME") or Path.home() / ".local/share") / "compresso-studio").expanduser().resolve() if LINUX else
+         Path(_datos) if _datos else
          Path(os.environ.get("LOCALAPPDATA") or Path.home() / "AppData/Local") / "DcryptoStudio"
          if COMERCIAL else APP)
 
@@ -29,7 +31,7 @@ PAPELERA = DATOS / "papelera"
 MUSICA = DATOS / "assets" / "musica"
 PERSONAJES = DATOS / "assets" / "personajes"
 PROPIOS = DATOS / "assets" / "propios"
-AJUSTES = DATOS / "ajustes.json" if INSTALADO else APP / "app" / "ajustes.json"
+AJUSTES = DATOS / "ajustes.json" if INSTALADO or LINUX else APP / "app" / "ajustes.json"
 MODELOS = DATOS / "modelos"  # caché de Hugging Face y de torch (solo en modo instalado)
 LOGS = DATOS / "logs"
 # Lo que baja el Setup (app/preparar.py), solo en modo instalado; en desarrollo, el venv y el ffmpeg del PATH:
@@ -56,6 +58,9 @@ def crear_estructura() -> None:
     """La primera vez (y en cada arranque, por si se borró algo): las carpetas del usuario."""
     for d in (GUIONES, SALIDA, PERSONAJES, PROPIOS, *(MUSICA / m for m in MOODS)):
         d.mkdir(parents=True, exist_ok=True)
+    if LINUX:
+        for d in (MODELOS, LOGS):
+            d.mkdir(parents=True, exist_ok=True)
     if INSTALADO:
         for d in (MODELOS, LOGS, LIBS, DESCARGAS):
             d.mkdir(parents=True, exist_ok=True)

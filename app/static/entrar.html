@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Entrar · CompressOS Studio</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,sans-serif;background:#101321;color:#eff1fe}
+body{min-height:100dvh;display:grid;place-items:center;margin:0;padding:24px;box-sizing:border-box}
+main{width:min(100%,380px);padding:32px;border:1px solid #353a54;border-radius:20px;background:#1b2031;box-sizing:border-box}
+h1{margin:0 0 26px;font-size:28px}label{display:grid;gap:6px;margin:14px 0}input,button{font:inherit;padding:10px;border-radius:8px;border:1px solid #505577}button{width:100%;background:#c2b0ff;color:#1b1234;font-weight:650;margin-top:10px}p{color:#ffb8bd}
+</style>
+</head>
+<body>
+<main>
+<h1>CompressOS Studio</h1>
+<form id="sesion">
+<label>Correo<input name="email" type="email" autocomplete="username" required></label>
+<label>Contraseña<input name="password" type="password" autocomplete="current-password" required></label>
+<button>Iniciar sesión</button>
+<p role="alert" id="error"></p>
+</form>
+</main>
+<script>
+const form = document.querySelector("#sesion");
+form.addEventListener("submit", async event => {
+  event.preventDefault();
+  const boton = form.querySelector("button"), error = document.querySelector("#error");
+  boton.disabled = true;
+  try {
+    const r = await fetch("/entrar", {method:"POST",headers:{"X-Dcrypto-Local":"1"},body:new FormData(form)});
+    if (r.ok) location.replace("/");
+    else error.textContent = (await r.json()).detail;
+  } catch {
+    error.textContent = "No se pudo iniciar sesión.";
+  } finally {
+    boton.disabled = false;
+  }
+});
+</script>
+</body>
+</html>

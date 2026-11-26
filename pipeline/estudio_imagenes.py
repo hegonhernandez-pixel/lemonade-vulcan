@@ -12,11 +12,11 @@ import warnings
 
 from PIL import Image, ImageOps
 
-from . import rutas
+from . import rutas, vulkan
 from .textos import error
 
 FORMATOS = {"9:16": (576, 1024), "16:9": (1024, 576), "1:1": (768, 768), "4:5": (768, 960)}
-PASOS = {"rapida": 4, "alta": 25}
+PASOS = {k: v[2] for k, v in vulkan.PERFILES.items()} if vulkan.activo() else {"rapida": 4, "alta": 25}
 MAX_SUBIDA = 12 * 1024 * 1024
 MAX_PIXELES = 24_000_000
 ID = re.compile(r"^[0-9a-f]{32}$")
@@ -187,8 +187,20 @@ def ejecutar(t):
                 t.avisar(f'paso-{indice}', 'ok')
                 t.avisar(f'paso-{indice + 1}', 'corriendo')
 
-        resultado = imagenes.generar_estudio(datos['prompt'], datos['calidad'], FORMATOS[datos['formato']],
-                                            datos['semilla'], foto, datos['intensidad'], progreso)
+        if t.opciones.demo:
+            from tempfile import TemporaryDirectory
+
+            progreso('cargado', 0)
+            with TemporaryDirectory(prefix='compresso-demo-') as directorio:
+                muestra = Path(directorio) / 'muestra.png'
+                imagenes._placeholder(muestra, datos['prompt'], FORMATOS[datos['formato']], datos['semilla'])
+                with Image.open(muestra) as im:
+                    resultado = im.convert('RGB')
+            for i in range(1, efectivos + 1):
+                progreso('paso', i)
+        else:
+            resultado = imagenes.generar_estudio(datos['prompt'], datos['calidad'], FORMATOS[datos['formato']],
+                                                datos['semilla'], foto, datos['intensidad'], progreso)
         t.avisar('guardar', 'corriendo')
         # Revalidar tras la inferencia: una revocación no puede publicar el resultado.
         with licencia._lock:

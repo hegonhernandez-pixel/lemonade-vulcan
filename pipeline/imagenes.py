@@ -13,7 +13,7 @@ from pathlib import Path
 from . import personajes
 from .guion import Escena, Guion
 from .textos import decir, error
-from . import rutas
+from . import rutas, vulkan
 
 NEGATIVO = "text, watermark, logo, letters, caption, blurry, deformed, extra fingers, low quality"
 
@@ -33,6 +33,9 @@ CALIDADES = {
     "rapida": Calidad("rápida", "stabilityai/sdxl-turbo", 4, 0.0),  # turbo no usa guidance
     "alta": Calidad("alta", "stabilityai/stable-diffusion-xl-base-1.0", 25, 7.0),
 }
+if vulkan.activo():
+    CALIDADES = {k: Calidad(v[0], k, v[2], v[3]) for k, v in vulkan.PERFILES.items()}
+
 DESCARGA_GB = 7.0  # lo que baja la primera vez cada modelo (pesos fp16, ~6.9 GB)
 ADAPTER_GB = 3.3  # IP-Adapter plus-face + codificador de imagen ViT-H (fp32), la primera vez
 # IP-Adapter con SDXL-Turbo: ver medidas en README (sección Personajes). Sin cabida en 6 GB -> solo Alta.
@@ -48,7 +51,7 @@ def calidad_de(e: Escena, calidad: str = "rapida") -> str:
     q = e.calidad or calidad
     if q not in CALIDADES:
         raise error("err.calidad", calidad=q, opciones=" / ".join(CALIDADES))
-    if q == "rapida" and not TURBO_CON_PERSONAJE and personajes.menciones(e.prompt):
+    if (q != "alta" if vulkan.activo() else q == "rapida" and not TURBO_CON_PERSONAJE) and personajes.menciones(e.prompt):
         return "alta"  # IP-Adapter solo cabe con el offload secuencial del modo Alta
     return q
 
@@ -249,7 +252,7 @@ def tokens_clip(texto: str) -> tuple[int, bool]:
     import os
     import re
 
-    if os.environ.get("COMPRESSO_IMAGE_BACKEND", "").lower() == "lemonade":
+    if vulkan.activo() or os.environ.get("COMPRESSO_IMAGE_BACKEND", "").lower() == "lemonade":
         return len(re.findall(r"\\w+|[^\\w\\s]", texto)), False
 
     tok = _tokenizer()
@@ -283,6 +286,16 @@ def generar_estudio(prompt: str, calidad: str, size: tuple[int, int], seed: int,
     El pipeline img2img es una vista temporal de los mismos componentes. Sus hooks
     se retiran y el offload de texto se restaura incluso si la inferencia falla.
     """
+    if vulkan.activo():
+        if progreso:
+            progreso("cargado", 0)
+        imagen = vulkan.generar(prompt, calidad, size, seed, negativo=NEGATIVO, foto=foto, intensidad=intensidad)
+        if progreso:
+            n = CALIDADES[calidad].pasos
+            for paso in range(1, (int(n * intensidad) if foto is not None else n) + 1):
+                progreso("paso", paso)
+        return imagen
+
     import torch
     from diffusers import AutoPipelineForImage2Image
 
@@ -333,6 +346,10 @@ def hash_imagen(g: Guion, e: Escena, demo: bool = False, calidad: str = "rapida"
         base += f"|{q}"
     if demo:
         base += "|demo"
+    elif vulkan.activo():
+        modelo = vulkan.ruta_modelo(q)
+        version = modelo.stat().st_mtime_ns if modelo and modelo.is_file() else 0
+        base += f"|vulkan|{q}|{modelo}|{version}"
     nombres = personajes.menciones(e.prompt)
     if nombres:  # el personaje, sus fotos y su fuerza: si cambia una referencia, la imagen se regenera
         try:
@@ -440,6 +457,13 @@ def generar_escena(g: Guion, e: Escena, carpeta: Path, demo: bool = False, calid
     if demo:
         _placeholder(ruta, f"[{e.idx}] {r.prompt}", size, seed)
         return ruta, False
+    if vulkan.activo():
+        perfil = calidad_de(e, calidad)
+        ref = _referencias(r.personaje) if r.personaje else ()
+        img = vulkan.generar(f"{r.prompt}, {g.estilo_visual}", perfil, size, seed, negativo=NEGATIVO,
+                            pasos=pasos, referencias=ref, fuerza=r.personaje.fuerza if r.personaje else 0.5)
+        img.save(ruta, quality=94)
+        return ruta, False
     if not usar_vulkan:
         import torch
 
@@ -499,6 +523,7 @@ def probar_personaje(p: "personajes.Personaje", demo: bool = False, calidad: str
     size = GEN["short"]  # el formato de los Shorts: así la prueba muestra lo que saldrá en un guion
     desc = p.descripcion or "a person"
     imgs = []
+    refs_vulkan = _referencias(p) if vulkan.activo() and not demo else ()
     for i, pose in enumerate(POSES, start=1):
         t0 = time.time()
         if avisar:
@@ -508,6 +533,9 @@ def probar_personaje(p: "personajes.Personaje", demo: bool = False, calidad: str
         if demo:
             _placeholder(tmp, f"@{p.nombre}: {prompt}", size, 1000 + i)
             img = Image.open(tmp)
+        elif vulkan.activo():
+            img = vulkan.generar(prompt, "alta", size, 7000 + i, negativo=NEGATIVO,
+                                referencias=(refs_vulkan[(i - 1) % len(refs_vulkan)],), fuerza=p.fuerza)
         else:
             img = _difundir(_pipe_para(q, p), prompt, q, size, 7000 + i, _referencias(p))
         imgs.append(img.convert("RGB"))

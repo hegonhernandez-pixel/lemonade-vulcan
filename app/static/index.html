@@ -4,10 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0e1014">
-<title>Dcrypto Studio</title>
-<link rel="icon" type="image/svg+xml" href="/logo/logo_dcrypto_studio.svg">
-<link rel="icon" type="image/png" sizes="256x256" href="/logo/logo_dcrypto_studio_256.png">
-<link rel="apple-touch-icon" href="/logo/logo_dcrypto_studio_256.png">
+<title>CompressOS Studio</title>
+<link rel="icon" type="image/png" sizes="256x256" href="/logo/compresso.png">
+<link rel="apple-touch-icon" href="/logo/compresso.png">
 <script src="/i18n.js"></script>
 <script src="/estudio.js"></script>
 <style>
@@ -40,12 +39,6 @@ nav button.activa { color: var(--acento-txt); background: var(--acento); font-we
 .cola-global:not([hidden]) ~ .idioma-ui { margin-left: 0; }
 .btn-cerrar-app { flex: none; width: auto; display: inline-flex; align-items: center; justify-content: center; background: none; border: 1px solid var(--borde); border-radius: var(--radio-s); color: var(--texto-2); padding: 4px 9px; font-size: 14px; line-height: 1; cursor: pointer; }
 .btn-cerrar-app:hover, .btn-cerrar-app:focus-visible { color: var(--error); border-color: var(--error); }
-.aviso-version { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 12px 20px 0; padding: 8px 12px; border: 1px solid var(--borde-2); border-radius: var(--radio-s); background: var(--panel); font-size: 13px; color: var(--texto-2); }
-.aviso-version[hidden] { display: none; }
-.aviso-version .notas { flex: 1 1 260px; color: var(--texto-3); font-size: 12px; }
-.aviso-version a { color: var(--acento-2); font-weight: 600; text-decoration: none; }
-.aviso-version a:hover { text-decoration: underline; }
-.aviso-version button { width: auto; margin-left: auto; background: none; border: 0; color: var(--texto-3); font-size: 16px; cursor: pointer; padding: 2px 6px; }
 .app-cerrada { min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; text-align: center; }
 .app-cerrada img { width: 64px; height: 64px; margin-bottom: 14px; }
 .app-cerrada h1 { font-size: 22px; margin: 0 0 8px; }
@@ -472,11 +465,36 @@ details.subs-guion select, details.subs-guion input[type=text] { background: var
 .est-mini small { padding:0 10px; color:var(--texto-2); }
 .est-paginas { display:flex; align-items:center; justify-content:center; gap:16px; margin-top:16px; }
 @media(max-width:900px) { .est-layout { grid-template-columns:1fr; } .est-cab { align-items:flex-start; } .est-etiqueta { display:none; } .est-preview { height:460px; } }
+/* Layout de la estación de producción */
+:root { --bg:#111420; --panel:#1a1e2e; --panel-2:#22273a; --borde:#343950; --borde-2:#494d68;
+  --texto:#eef0fc; --texto-2:#bfc4dc; --texto-3:#a0a8c4; --acento:#c2afff; --acento-2:#d5caff;
+  --acento-txt:#1d1337; --radio:16px; --radio-s:9px; color-scheme:dark; }
+header { padding:14px clamp(12px, 3vw, 40px); background:#141827f5; }
+.marca { gap:12px; font-size:15px; }
+.marca img { height:34px; width:34px; border-radius:9px; }
+nav button { border-radius:8px; }
+nav button.activa { background:#322c4c; color:#e1d7ff; }
+main { padding:22px clamp(14px, 3vw, 42px) 36px; }
+.espacio-cabecera { margin:0 0 18px; border-bottom:1px solid var(--borde); padding:0 0 15px; }
+.espacio-cabecera h1 { margin:0; font-size:clamp(24px,3vw,36px); line-height:1.1; letter-spacing:-.04em; }
+.espacio-cabecera p { margin:8px 0 0; }
+.panel { padding:clamp(14px, 1.6vw, 23px); }
+.panel > h2 { font-size:15px; letter-spacing:0; text-transform:none; color:var(--texto); }
+.ajustes { max-width:none; grid-template-columns:repeat(3,minmax(0,1fr)); align-items:start; }
+@media (max-width:1050px) { .ajustes { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:640px) { .ajustes { grid-template-columns:minmax(0,1fr); } }
+.voz-monitor { display:flex; align-items:center; gap:10px; }
+.voz-monitor label { flex:1; min-width:0; }
+.voz-monitor > button { margin-top:7px; }
+audio { width:100%; margin:8px 0; }
+.cierre-muestra { width:100%; max-width:180px; max-height:150px; object-fit:contain; background:var(--bg); border-radius:8px; margin:0 0 12px; }
+.prueba-voz { margin:0 0 12px; }
+:focus-visible { outline:2px solid var(--acento); outline-offset:3px; }
 </style>
 </head>
 <body>
 <header>
-  <div class="marca"><img src="/logo/logo_dcrypto_studio.svg" alt=""><span>Dcrypto Studio</span></div>
+  <div class="marca"><img src="/logo/compresso.png" alt=""><span>CompressOS Studio</span></div>
   <nav>
     <button data-tab="nuevo" data-i18n="nav.nuevo"></button>
     <button data-tab="biblioteca" data-i18n="nav.biblioteca"></button>
@@ -486,20 +504,22 @@ details.subs-guion select, details.subs-guion input[type=text] { background: var
     <button data-tab="ayuda" data-i18n="nav.ayuda"></button>
   </nav>
   <div class="cola-global" id="colaGlobal" hidden></div>
+  <button type="button" class="btn chico" id="bSalirSesion" hidden data-i18n="comp.salir"></button>
   <label class="idioma-ui" data-i18n-title="ui.idioma"><span aria-hidden="true">🌐</span><select id="selIdioma"></select></label>
   <button type="button" class="btn-cerrar-app" id="bCerrarApp" data-i18n-title="cerrar.boton"><span aria-hidden="true">⏻</span></button>
 </header>
-<div class="aviso-version" id="avisoVersion" role="status" hidden></div>
 
 <main>
+  <div class="espacio-cabecera"><div><h1 id="tituloVista" data-i18n="nav.nuevo"></h1><p id="estadoMotor" class="nota" hidden>Stable Diffusion.cpp · Linux / Vulkan</p></div></div>
   <!-- ================= NUEVO VIDEO ================= -->
   <section id="tab-nuevo" class="estudio" hidden>
     <!-- 1. Idea -->
     <div class="panel idea">
-      <h2><span class="n">1</span> <span data-i18n="idea.titulo"></span></h2>
+      <h2><span data-i18n="idea.titulo"></span></h2>
       <label class="campo"><span data-i18n="idea.tema"></span>
         <input id="fTema" type="text" data-i18n-ph="idea.tema_ph">
       </label>
+      <a class="btn chico" id="fBuscarTema" target="_blank" rel="noopener noreferrer" hidden data-i18n="comp.buscar_tema"></a>
       <label class="campo" id="campoMaterial"><span data-i18n="idea.material"></span>
         <textarea id="fMaterial" rows="5" data-i18n-ph="idea.material_ph"></textarea>
       </label>
@@ -518,6 +538,8 @@ details.subs-guion select, details.subs-guion input[type=text] { background: var
         <label><span class="etq-campo"><span data-i18n="idea.voz"></span> <span class="motor-etq" id="fMotorEtq"></span></span><select id="fVoz"></select></label>
       </div>
       <p class="nota aviso-voz" id="fVozAviso" hidden></p>
+      <button type="button" class="btn chico prueba-voz" id="fProbarVoz" data-i18n="comp.escuchar"></button>
+      <audio id="fAudioVoz" controls hidden></audio>
       <div class="campo"><label class="campo" style="margin:0"><span data-i18n="idea.estilo"></span></label>
         <div class="chips" id="fPresets"></div>
         <textarea id="fEstilo" rows="3"></textarea>
@@ -563,6 +585,7 @@ details.subs-guion select, details.subs-guion input[type=text] { background: var
         </div>
         <p class="nota" id="marcaNinguna" hidden data-i18n="marca.nota_ninguna"></p>
         <div id="marcaGuionCtl"></div>
+        <button type="button" class="btn chico" id="bMarcaGlobal" hidden data-i18n="comp.marca_global"></button>
       </details>
       <details class="subs-guion" id="cierreGuion">
         <summary><span data-i18n="cierre.de_video"></span> <b id="cierreModoTxt"></b></summary>
@@ -594,13 +617,13 @@ details.subs-guion select, details.subs-guion input[type=text] { background: var
 
     <!-- 2. Guion -->
     <div class="panel guion">
-      <h2><span class="n">2</span> <span data-i18n="col.guion"></span> <span class="estado-guardado" id="estadoGuardado" style="margin-left:auto"></span></h2>
+      <h2><span data-i18n="col.guion"></span> <span class="estado-guardado" id="estadoGuardado" style="margin-left:auto"></span></h2>
       <div id="guionCuerpo"></div>
     </div>
 
     <!-- 3. Vista previa -->
     <div class="panel vista">
-      <h2><span class="n">3</span> <span data-i18n="col.vista"></span></h2>
+      <h2><span data-i18n="col.vista"></span></h2>
       <div id="vistaCuerpo"></div>
     </div>
   </section>
@@ -653,6 +676,7 @@ details.subs-guion select, details.subs-guion input[type=text] { background: var
       <form id="estForm" class="panel est-form">
         <h2 data-i18n="est.crear"></h2>
         <label class="campo"><span data-i18n="est.prompt"></span><textarea id="estPrompt" maxlength="2000" required rows="5" data-i18n-ph="est.prompt_ph"></textarea><span class="nota" data-i18n="est.prompt_nota"></span><span class="prompt-largo" id="estPromptLargo" role="status" hidden></span></label>
+        <button type="button" class="btn chico" id="estMejorar" data-i18n="comp.mejorar_prompt"></button>
         <div class="est-par">
           <label class="campo"><span data-i18n="est.formato"></span><select id="estFormato"><option value="9:16">9:16</option><option value="16:9">16:9</option><option value="1:1" selected>1:1</option><option value="4:5">4:5</option></select></label>
           <label class="campo"><span data-i18n="est.calidad"></span><select id="estCalidad"><option value="rapida" data-i18n="est.rapida"></option><option value="alta" data-i18n="est.alta"></option></select></label>
@@ -677,13 +701,16 @@ details.subs-guion select, details.subs-guion input[type=text] { background: var
   <section id="tab-ajustes" hidden>
     <div class="ajustes">
       <div class="panel">
-        <h2 data-i18n="aj.defecto"></h2>
+        <h2 data-i18n="comp.voz_video"></h2>
         <label class="campo"><span data-i18n="aj.motor"></span>
           <select id="aMotor"><option value="edge" data-i18n="aj.motor_edge"></option><option value="kokoro" data-i18n="aj.motor_kokoro"></option></select></label>
         <p class="nota" id="aMotorNota"></p>
         <label class="campo"><span data-i18n="aj.voz_es"></span><select id="aVoz"></select></label>
+        <div class="voz-monitor"><label class="campo"><span data-i18n="aj.rate"></span><input id="aRate" type="text"></label><button type="button" id="aProbarVoz" class="btn chico" data-i18n="comp.escuchar"></button></div>
+        <audio id="aAudioVoz" controls hidden></audio>
         <label class="campo"><span data-i18n="idea.formato"></span>
           <select id="aFormato"><option value="short" data-i18n="aj.short"></option><option value="largo" data-i18n="aj.largo"></option></select></label>
+        <div class="chips" id="aEstilos"></div>
         <label class="campo"><span data-i18n="idea.estilo"></span><textarea id="aEstilo" rows="3"></textarea></label>
         <label class="campo"><span data-i18n="aj.cierre_es"></span><input id="aCierreEs" type="text" maxlength="150" data-i18n-ph="aj.cierre_ph_es"></label>
         <label class="campo"><span data-i18n="aj.cierre_en"></span><input id="aCierreEn" type="text" maxlength="150" data-i18n-ph="aj.cierre_ph_en"></label>
@@ -691,8 +718,9 @@ details.subs-guion select, details.subs-guion input[type=text] { background: var
         <button class="btn primario" data-guardar-ajustes data-i18n="aj.guardar"></button>
       </div>
       <div class="panel">
-        <h2 data-i18n="aj.produccion"></h2>
-        <label class="campo"><span data-i18n="aj.rate"></span><input id="aRate" type="text"></label>
+        <h2 data-i18n="comp.motor_marca"></h2>
+        <p class="nota" id="aMotorImagen"></p>
+
         <label class="campo"><span data-i18n="aj.calidad"></span>
           <select id="aCalidad">
             <option value="rapida" data-i18n="aj.rapida"></option>
@@ -708,6 +736,7 @@ details.subs-guion select, details.subs-guion input[type=text] { background: var
         <label class="interruptor"><div><span data-i18n="aj.portada"></span><small data-i18n="aj.portada_d"></small></div><input id="aPortada" type="checkbox"></label>
         <label class="interruptor"><div><span data-i18n="aj.cierre_tarjeta"></span><small data-i18n="aj.cierre_tarjeta_d"></small></div><input id="aCierreTarjeta" type="checkbox"></label>
         <label class="campo" id="aCierreNombreCampo"><span data-i18n="aj.cierre_nombre"></span><input id="aCierreNombre" type="text" maxlength="60" data-i18n-ph="aj.cierre_nombre_ph"></label>
+        <img id="aCierrePreview" class="cierre-muestra" alt="" hidden>
         <label class="interruptor"><div><span data-i18n="aj.demo"></span><small data-i18n="aj.demo_d"></small></div><input id="aDemo" type="checkbox"></label>
         <button class="btn primario" id="bGuardarAjustes" style="margin-top:12px" data-i18n="aj.guardar"></button>
       </div>
@@ -717,7 +746,9 @@ details.subs-guion select, details.subs-guion input[type=text] { background: var
           <select id="aIA">
             <option value="claude_code">Claude Code</option>
             <option value="anthropic" data-i18n="aj.ia_anthropic"></option>
-            <option value="openai" data-i18n="aj.ia_openai"></option>
+            <option value="gemini">Google Gemini</option>
+            <option value="openai">OpenAI · ChatGPT</option>
+            <option value="ollama">Ollama · Local</option>
             <option value="ninguno" data-i18n="aj.ia_ninguno"></option>
           </select></label>
         <p class="nota" id="aIAClaudeEstado" data-ia="claude_code"></p>
@@ -733,6 +764,15 @@ details.subs-guion select, details.subs-guion input[type=text] { background: var
             <span class="clave-estado"><span data-clave-estado="openai"></span><button class="btn fantasma chico" data-quitar-clave="openai" data-i18n="aj.ia_quitar"></button></span></label>
           <label class="campo"><span data-i18n="aj.ia_modelo"></span><input id="aOpenaiModelo" type="text" spellcheck="false"></label>
         </div>
+        <div data-ia="gemini">
+          <label class="campo"><span data-i18n="aj.ia_clave"></span>
+            <input id="aGeminiKey" type="password" autocomplete="off" spellcheck="false">
+            <span class="clave-estado"><span data-clave-estado="gemini"></span><button class="btn fantasma chico" data-quitar-clave="gemini" data-i18n="aj.ia_quitar"></button></span></label>
+          <label class="campo"><span data-i18n="aj.ia_modelo"></span><input id="aGeminiModelo" type="text" spellcheck="false"></label>
+          <label class="interruptor"><div><span>Google Search</span><small data-i18n="comp.google_info"></small></div><input id="aGoogle" type="checkbox"></label>
+        </div>
+        <div data-ia="ollama"><label class="campo"><span data-i18n="aj.ia_modelo"></span><input id="aOllamaModelo" type="text" spellcheck="false"></label>
+        <p class="nota" data-i18n="comp.ollama_info"></p></div>
         <p class="nota" data-ia="ninguno" data-i18n="aj.ia_ninguno_d"></p>
         <p class="nota" data-i18n="aj.ia_d"></p>
         <button class="btn primario" data-guardar-ajustes data-i18n="aj.guardar"></button>
@@ -742,12 +782,12 @@ details.subs-guion select, details.subs-guion input[type=text] { background: var
         <p class="nota" style="margin-top:-6px" data-i18n="aj.subs_global_d"></p>
         <div id="aSubs2"></div>
       </div>
-      <div class="panel">
+      <div class="panel" id="aApoyoPanel">
         <h2 data-i18n="aj.apoyar"></h2>
         <p class="nota" style="margin-top:-6px" data-i18n="aj.apoyar_d"></p>
         <button class="btn fantasma" id="bApoyar" style="margin-top:10px" data-i18n="aj.apoyar_btn"></button>
       </div>
-      <div class="panel">
+      <div class="panel" id="aSetupPanel">
         <h2 data-i18n="aj.setup"></h2>
         <p class="nota" style="margin-top:-6px" data-i18n="aj.setup_d"></p>
         <div class="nota" id="aSetupResumen"></div>
@@ -918,6 +958,7 @@ async function api(metodo, ruta, cuerpo) {
     body: cuerpo ? JSON.stringify(cuerpo) : undefined,
   });
   const data = await r.json().catch(() => null);
+  if (r.status === 401) location.assign("/entrar");
   if (!r.ok && r.status !== 409) throw Object.assign(new Error(errorHttp(data, r.status)), { status: r.status });
   return { status: r.status, data };
 }
@@ -998,7 +1039,23 @@ function ruta() {
 }
 function ir(tab, slug) { location.hash = slug ? `#/${tab}/${encodeURIComponent(slug)}` : `#/${tab}`; }
 
+function actualizarBusqueda() {
+  const tema = $("#fTema").value.trim(), enlace = $("#fBuscarTema");
+  enlace.hidden = !tema;
+  if (tema) enlace.href = "https://www.google.com/search?" + new URLSearchParams({q: tema});
+}
 async function alNavegar() {
+  const vistaTitulo = ruta().tab;
+  if (vistaTitulo === "setup" && S.ajustes?.linux) {
+    ir("ajustes");
+    return;
+  }
+  if (vistaTitulo !== S.ultimaVista) window.scrollTo(0, 0);
+  S.ultimaVista = vistaTitulo;
+  const itemTitulo = document.querySelector(`nav button[data-tab="${CSS.escape(vistaTitulo)}"]`);
+  const titulo = $("#tituloVista");
+  titulo.dataset.i18n = itemTitulo?.dataset.i18n || "nav.nuevo";
+  titulo.textContent = T(titulo.dataset.i18n);
   const { tab, slug } = ruta();
   if (tab === "licencia") return ir("nuevo");  // enlaces de la 1.0.0: la versión gratuita no tiene esa pestaña
   $$("nav button").forEach(b => b.classList.toggle("activa", b.dataset.tab === tab));
@@ -1101,6 +1158,8 @@ function renderIdea() {
   const av = S.slug && S.det?.aviso_voz;
   $("#fVozAviso").hidden = !av;
   $("#fVozAviso").textContent = av || "";
+  actualizarBusqueda();
+  $("#fProbarVoz").hidden = motor !== "edge";
   $("#fEstilo").value = d.estilo_visual || "";
   $("#fPresets").innerHTML = PRESETS.map(([n, v]) =>
     `<button class="chip ${v === d.estilo_visual ? "activa" : ""}" data-v="${esc(v)}">${T(n)}</button>`).join("");
@@ -2180,6 +2239,7 @@ function renderMarcaGuion() {
   $("#marcaNinguna").hidden = !ninguna;
   const cont = $("#marcaGuionCtl");
   cont.hidden = ninguna;
+  $("#bMarcaGlobal").hidden = !propio;
   if (!cont.firstElementChild) {
     cont.innerHTML = htmlControlesMarca();
     conectarMarca(cont.firstElementChild, v => {
@@ -2207,8 +2267,9 @@ function renderCierreGuion() {
     : !a.cierre_tarjeta ? T("cierre.nota_global_no")
     : a.cierre_nombre ? T("cierre.nota_global_si", { nombre: a.cierre_nombre }) : T("cierre.nota_global_logo");
   const img = $("#cierrePreview");
-  img.hidden = modo !== "propio" || !S.slug;
-  if (!img.hidden) img.src = `/propios/${encodeURIComponent(S.slug)}/${encodeURIComponent(c.split("/").pop())}?v=${S.cierreV || 0}`;
+  img.hidden = !(modo === "propio" && S.slug) && !(modo === "global" && a.cierre_tarjeta);
+  if (modo === "global" && a.cierre_tarjeta) img.src = urlCierre(d.formato || a.formato, a.cierre_nombre);
+  if (modo === "propio" && S.slug) img.src = `/propios/${encodeURIComponent(S.slug)}/${encodeURIComponent(c.split("/").pop())}?v=${S.cierreV || 0}`;
   $("#bCierreSubir").hidden = modo !== "propio";
 }
 
@@ -2614,6 +2675,19 @@ async function accionPersonaje(accion, nombre) {
 }
 
 // ---------------- ajustes ----------------
+function urlCierre(formato, nombre) {
+  return "/api/marca/cierre?" + new URLSearchParams({formato, nombre: nombre || ""});
+}
+function actualizarVistaCierre() {
+  const vista = $("#aCierrePreview");
+  vista.hidden = !$("#aCierreTarjeta").checked;
+  if (!vista.hidden) vista.src = urlCierre($("#aFormato").value, $("#aCierreNombre").value.trim());
+}
+function reproducirVoz(id, rate, audio) {
+  audio.src = "/api/voz/prueba?" + new URLSearchParams({id, rate});
+  audio.hidden = false;
+  audio.play().catch(() => toast(T("comp.voz_error"), "error"));
+}
 async function renderAjustes(marcaPendiente = null) {
   const a = S.ajustes;
   $("#aMotor").value = a.motor_voz || "edge";
@@ -2624,6 +2698,10 @@ async function renderAjustes(marcaPendiente = null) {
   $("#aCierreEn").value = a.frase_cierre?.en || "";
   $("#aRate").value = a.rate;
   $("#aCalidad").value = a.calidad;
+  $("#aSetupPanel").hidden = a.linux;
+  $("#bLiberar").hidden = a.linux;
+  $("#bLiberar").nextElementSibling.hidden = a.linux;
+  $("#aApoyoPanel").hidden = !a.url_apoyo;
   $("#aSubs").checked = a.subtitulos;
   $("#aDemo").checked = a.demo;
   $("#aMarca").checked = marcaPendiente?.activa ?? a.marca_agua;
@@ -2634,9 +2712,19 @@ async function renderAjustes(marcaPendiente = null) {
   $("#aCierreTarjeta").checked = a.cierre_tarjeta !== false;
   $("#aCierreNombre").value = a.cierre_nombre ?? "";
   $("#aCierreNombreCampo").hidden = !$("#aCierreTarjeta").checked;
+  actualizarVistaCierre();
   $("#aIA").value = a.proveedor_ia;
   $("#aAnthModelo").value = a.anthropic_modelo || "";
   $("#aOpenaiModelo").value = a.openai_modelo || "";
+  $("#aGeminiModelo").value = a.gemini_modelo || "";
+  $("#aOllamaModelo").value = a.ollama_modelo || "";
+  $("#aGoogle").checked = a.buscar_google;
+  $("#aEstilos").replaceChildren(...PRESETS.map(([nombre, valor]) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "chip"; b.textContent = T(nombre);
+    b.onclick = () => { $("#aEstilo").value = valor; };
+    return b;
+  }));
   renderIA();
   const cs = $("#aSubs2");
   if (SUBS && !cs.firstElementChild) {
@@ -2650,11 +2738,19 @@ async function renderAjustes(marcaPendiente = null) {
   }
   if (SUBS) ponerSubs($(".subs-ctl", cs), a.estilo_subtitulos || {});
   renderMarcaAjustes(marcaPendiente?.estilo);
-  resumenSetupAjustes();
+  if (!a.linux) resumenSetupAjustes();
   renderEspacio();
   try {
     const s = (await api("GET", "/api/sistema")).data;
     const g = s.gpu;
+    if (s.vulkan) {
+      $("#aMotorImagen").textContent = s.vulkan.motor;
+      $("#sistema").innerHTML = [
+        [s.vulkan.motor, s.vulkan.dispositivo || T("sis.no_detectada")],
+        ...Object.values(s.vulkan.modelos).map(m => [m.nombre, T(m.configurado ? "comp.configurado" : "comp.sin_modelo")]),
+      ].map(([nombre, estado]) => `<div class="dato"><span>${esc(nombre)}</span><span>${esc(estado)}</span></div>`).join("");
+      return;
+    }
     $("#sistema").innerHTML = `
       <div class="dato"><span>${T("sis.version")}</span><span>${esc(S.ajustes.version || "")}</span></div>
       <div class="dato"><span>GPU</span><span>${g ? esc(g.nombre) : T("sis.no_detectada")}</span></div>
@@ -2701,13 +2797,13 @@ function renderIA() {
   const ia = S.ajustes.ia || {}, prov = $("#aIA").value;
   $$("[data-ia]").forEach(el => { el.hidden = el.dataset.ia !== prov; });
   $("#aIAClaudeEstado").textContent = T(ia.claude_instalado ? "aj.ia_claude_si" : "aj.ia_claude_no");
-  for (const p of ["anthropic", "openai"]) {
+  for (const p of ["anthropic", "openai", "gemini"]) {
     const k = ia.claves?.[p], quitar = IA_QUITAR[p];
     $(`[data-clave-estado="${p}"]`).textContent = quitar ? T("aj.ia_se_quita")
       : !k ? T("aj.ia_sin_clave") : ia.de_entorno?.[p] ? T("aj.ia_clave_entorno", { k }) : T("aj.ia_clave_guardada", { k });
     $(`[data-quitar-clave="${p}"]`).hidden = !k || quitar || ia.de_entorno?.[p];
   }
-  $("#aAnthKey").placeholder = $("#aOpenaiKey").placeholder = T("aj.ia_clave_ph");
+  $("#aAnthKey").placeholder = $("#aOpenaiKey").placeholder = $("#aGeminiKey").placeholder = T("aj.ia_clave_ph");
 }
 
 /** Ajustes > motor de voz: la lista de voces en español es la del motor elegido. */
@@ -2717,6 +2813,7 @@ function renderMotor() {
   const actual = $("#aVoz").dataset.motor === motor && $("#aVoz").value ? $("#aVoz").value : (motor === "kokoro" ? a.voz_kokoro : a.voz);
   llenarVoces($("#aVoz"), actual, "es", motor);
   $("#aVoz").dataset.motor = motor;
+  $("#aProbarVoz").hidden = motor !== "edge";
   $("#aMotorNota").textContent = T(motor === "kokoro" ? "aj.motor_kokoro_d" : "aj.motor_edge_d")
     + (a.kokoro_instalado ? "" : " " + T("aj.motor_kokoro_falta"));
 }
@@ -2734,15 +2831,17 @@ async function guardarAjustes() {
     estilo_marca: SUBS ? leerMarca($("#aMarcaCtl .marca-ctl")) : S.ajustes.estilo_marca,
     proveedor_ia: $("#aIA").value,
     anthropic_modelo: $("#aAnthModelo").value.trim(), openai_modelo: $("#aOpenaiModelo").value.trim(),
+    gemini_modelo: $("#aGeminiModelo").value.trim(), ollama_modelo: $("#aOllamaModelo").value.trim(),
+    buscar_google: $("#aGoogle").checked,
   };
   // una clave solo viaja si la escribiste (o vacía si pediste quitarla); si no, se queda la guardada
-  for (const [p, id] of [["anthropic", "#aAnthKey"], ["openai", "#aOpenaiKey"]]) {
+  for (const [p, id] of [["anthropic", "#aAnthKey"], ["openai", "#aOpenaiKey"], ["gemini", "#aGeminiKey"]]) {
     const v = $(id).value.trim();
     if (v) nuevos[`${p}_api_key`] = v; else if (IA_QUITAR[p]) nuevos[`${p}_api_key`] = "";
   }
   try {
     S.ajustes = (await api("PUT", "/api/ajustes", nuevos)).data;
-    $("#aAnthKey").value = $("#aOpenaiKey").value = "";
+    $("#aAnthKey").value = $("#aOpenaiKey").value = $("#aGeminiKey").value = "";
     for (const k in IA_QUITAR) delete IA_QUITAR[k];
     renderIA();
     botonesEscritura();
@@ -2762,7 +2861,7 @@ function avisarTerminados(lista) {
     const ver = t.tipo === "personaje" ? () => ir("personajes") : () => ir("nuevo", t.slug);
     toast(msg, ok ? "ok" : "error", { texto: T("fin.ver"), fn: ver, ms: 20000 });
     if (document.hidden && "Notification" in window && Notification.permission === "granted")
-      new Notification("Dcrypto Studio", { body: msg, icon: "/logo/logo_dcrypto_studio_256.png" });
+      new Notification("CompressOS Studio", { body: msg, icon: "/logo/compresso.png" });
   }
 }
 /** Al lanzar algo largo, pedir permiso (una vez) para avisar también si la ventana está en segundo plano. */
@@ -3066,6 +3165,35 @@ function conectar() {
 
   // ajustes
   $("#bGuardarAjustes").onclick = guardarAjustes;
+  $("#fTema").addEventListener("input", actualizarBusqueda);
+  $("#estMejorar").onclick = async () => {
+    const boton = $("#estMejorar"), campo = $("#estPrompt"), texto = campo.value;
+    boton.disabled = true;
+    try {
+      const {data} = await api("POST", "/api/prompt/mejorar", {texto});
+      if (campo.value === texto) {
+        campo.value = data.prompt;
+        campo.dispatchEvent(new Event("input"));
+      }
+    } catch (err) { toast(err.message, "error"); }
+    finally { boton.disabled = false; }
+  };
+  $("#bSalirSesion").onclick = async () => { await api("POST", "/api/auth/salir"); location.replace("/entrar"); };
+  $("#fProbarVoz").onclick = () => reproducirVoz($("#fVoz").value, S.ajustes.rate, $("#fAudioVoz"));
+  $("#aProbarVoz").onclick = () => reproducirVoz($("#aVoz").value, $("#aRate").value, $("#aAudioVoz"));
+  for (const id of ["aCierreNombre", "aCierreTarjeta", "aFormato"])
+    $(`#${id}`).addEventListener("change", actualizarVistaCierre);
+  $("#bMarcaGlobal").onclick = async () => {
+    const d = datosIdea();
+    if (!d.marca || typeof d.marca !== "object") return;
+    try {
+      S.ajustes = (await api("PUT", "/api/ajustes", {estilo_marca: d.marca, marca_agua: Boolean(S.ajustes.logo_marca)})).data;
+      delete d.marca;
+      renderMarcaGuion();
+      if (S.slug) guardarLuego();
+      toast(T("aj.guardados"), "ok");
+    } catch (err) { toast(err.message, "error"); }
+  };
   $$("[data-guardar-ajustes]").forEach(b => b.onclick = guardarAjustes);
   $("#aIA").onchange = renderIA;
   $("#aMotor").onchange = renderMotor;
@@ -3139,7 +3267,7 @@ function verImagen(src) {
 function renderTodo() { renderIdea(); renderGuion(); renderVista(); }
 
 // ---------------- cerrar la app ----------------
-/** "Cerrar Dcrypto Studio": con trabajos en marcha pide confirmación; luego el servidor suelta los modelos y
+/** "Cerrar CompressOS Studio": con trabajos en marcha pide confirmación; luego el servidor suelta los modelos y
  *  se cierra (con el lanzador, también el icono de la bandeja y ffmpeg). Queda una pantalla final. */
 async function cerrarApp() {
   if (S.cerrando || S.cerrada) return;
@@ -3167,38 +3295,6 @@ function pantallaCerrada() {
     <h1>${esc(T("cerrar.titulo"))}</h1><p>${esc(T("cerrar.pestana"))}</p></div></div>`;
 }
 
-// ---------------- versión nueva ----------------
-const CLAVE_VERSION_DESCARTADA = "dcrypto.version_descartada";
-/** Aviso discreto si el version.json de la web anuncia una versión más nueva. El servidor hace la consulta
- *  (sin datos del usuario ni del equipo); sin internet no hay aviso ni error. */
-async function revisarVersionNueva() {
-  let nueva;
-  try { nueva = (await api("GET", "/api/version/nueva")).data?.nueva; } catch { return; }
-  if (!nueva?.version || !/^https:\/\//.test(nueva.url || "")) return;
-  let descartada = null;
-  try { descartada = localStorage.getItem(CLAVE_VERSION_DESCARTADA); } catch { /* sin almacenamiento: se muestra */ }
-  if (descartada === nueva.version) return;
-  S.versionNueva = nueva;
-  renderAvisoVersion();
-}
-
-function renderAvisoVersion() {
-  const caja = $("#avisoVersion"), v = S.versionNueva;
-  if (!caja) return;
-  caja.hidden = !v;
-  if (!v) { caja.innerHTML = ""; return; }
-  const notas = v.notas?.[LANG] || v.notas?.es || "";
-  caja.innerHTML = `<span>${esc(T("version.nueva", { version: v.version }))}</span>
-    <a href="${esc(v.url)}" target="_blank" rel="noopener noreferrer">${esc(T("version.descargar"))} →</a>
-    ${notas ? `<span class="notas">${esc(notas)}</span>` : ""}
-    <button type="button" data-descartar aria-label="${esc(T("version.descartar"))}" title="${esc(T("version.descartar"))}">×</button>`;
-  $("[data-descartar]", caja).onclick = () => {
-    try { localStorage.setItem(CLAVE_VERSION_DESCARTADA, v.version); } catch { /* solo se oculta en esta sesión */ }
-    S.versionNueva = null;
-    renderAvisoVersion();
-  };
-}
-
 /** Pie de página con la versión (app/version.py, llega en /api/ajustes). */
 function versionApp() {
   const v = $("#pie")?.dataset.version || "";
@@ -3223,7 +3319,6 @@ function cambiarIdiomaUI(l) {
   guardarIdioma(l);
   aplicarI18n();
   renderPie();
-  renderAvisoVersion();
   $("#subsGuionCtl").innerHTML = "";  // los controles de subtítulos se construyen una vez: se rehacen
   $("#aSubs2").innerHTML = "";
   $("#marcaGuionCtl").innerHTML = $("#aMarcaCtl").innerHTML = "";
@@ -3247,11 +3342,11 @@ async function recuperarDPAPI() {
   if (!data.afectadas.length) return false;
   const en = LANG === "en";
   for (const proveedor of data.afectadas) {
-    if (!["anthropic", "openai"].includes(proveedor)) return false;
+    if (!["anthropic", "openai", "gemini"].includes(proveedor)) return false;
     const dlg = document.createElement("dialog");
     dlg.innerHTML = `<form method="dialog">
       <h3>${en ? "Replace unreadable API key" : "Reemplazar API key ilegible"}: ${proveedor}</h3>
-      <p>${en ? "Windows could not decrypt this key. Its original value cannot be displayed. Enter a replacement; other keys and settings will be preserved." : "Windows no pudo descifrar esta clave. No es posible mostrar su valor original. Introduce una nueva; las demás claves y ajustes se conservarán."}</p>
+      <p>${en ? "The server could not decrypt this key. Its original value cannot be displayed. Enter a replacement; other keys and settings will be preserved." : "El servidor no pudo descifrar esta clave. No es posible mostrar su valor original. Introduce una nueva; las demás claves y ajustes se conservarán."}</p>
       <input type="password" autocomplete="off" required aria-label="${en ? "New API key" : "Nueva API key"}">
       <p role="alert"></p>
       <button type="button" data-cancel>${en ? "Cancel" : "Cancelar"}</button>
@@ -3289,6 +3384,15 @@ async function recuperarDPAPI() {
   try {
     const [a, m, sb] = await Promise.all([api("GET", "/api/ajustes"), api("GET", "/api/musica"), api("GET", "/api/subtitulos")]);
     S.ajustes = a.data; S.musica = m.data; SUBS = sb.data;
+    $("#bSalirSesion").hidden = !a.data.auth;
+    $("#estadoMotor").hidden = !a.data.linux;
+    if (a.data.linux) {
+      for (const id of ["aCalidad", "estCalidad"]) {
+        $(`#${id}`).replaceChildren(...[
+          ["rapida", "SD Turbo GGUF"], ["sd_turbo", "SD Turbo"], ["sdxl_turbo", "SDXL Turbo"], ["alta", "SDXL Base 1.0"],
+        ].map(([valor, nombre]) => new Option(nombre, valor)));
+      }
+    }
     renderPie();
     cargarFuentesCss();
   } catch (e) {
@@ -3308,7 +3412,6 @@ async function recuperarDPAPI() {
     } catch { /* sin setup: la app sigue */ }
   }
   await alNavegar();
-  revisarVersionNueva();  // tampoco bloquea: sin internet, no hay aviso
   // las voces vienen de internet: no bloquean el arranque
   api("GET", "/api/voces").then(r => { S.voces = r.data; renderIdea(); if (ruta().tab === "ajustes") renderMotor(); }).catch(() => {});
 })();

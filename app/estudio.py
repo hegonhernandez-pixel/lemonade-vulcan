@@ -2,7 +2,7 @@
 import io
 import threading
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.responses import JSONResponse, Response
 from fastapi.routing import APIRoute
 from PIL import Image
@@ -87,7 +87,7 @@ def galeria(limite: int = Query(24, ge=1, le=60), offset: int = Query(0, ge=0)):
 
 
 @router.post('', status_code=202)
-def generar(prompt: str = Form(...), formato: str = Form('1:1'), calidad: str = Form('rapida'),
+def generar(request: Request, prompt: str = Form(...), formato: str = Form('1:1'), calidad: str = Form('rapida'),
             intensidad: float = Form(0.5), archivo: UploadFile | None = File(None)):
     almacen = estudio.Almacen()
     try:
@@ -101,7 +101,7 @@ def generar(prompt: str = Form(...), formato: str = Form('1:1'), calidad: str = 
                 exigir_licencia()
                 datos = almacen.crear(opciones, foto)
                 try:
-                    trabajos.encolar(f"estudio:{datos['id']}", 'estudio')
+                    trabajos.encolar(f"estudio:{datos['id']}", 'estudio', opciones=request.app.state.opciones_render())
                 except Exception:
                     almacen.eliminar(datos['id'])
                     raise

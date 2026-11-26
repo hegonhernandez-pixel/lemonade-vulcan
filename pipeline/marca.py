@@ -1,12 +1,15 @@
 """Identidad del canal: logo (miniaturas, marca de agua) y tarjeta de cierre."""
 from dataclasses import asdict, dataclass
 from io import BytesIO
+import os
+import tempfile
 from pathlib import Path
 
 from .textos import error
+from . import rutas
 
 RAIZ = Path(__file__).parent.parent
-LOGO = RAIZ / "assets" / "logo" / "logo_dcrypto_transparente_1024.png"
+LOGO = RAIZ / "assets" / "logo" / ("compresso.png" if rutas.LINUX else "logo_dcrypto_transparente_1024.png")
 FUENTE = RAIZ / "assets" / "fuentes" / "DejaVuSans-Bold.ttf"
 
 
@@ -25,10 +28,10 @@ def logo(alto: int, opacidad: float = 1.0, fuente: Path | bytes | None = None):
     return im
 
 
-CIERRE_DIR = RAIZ / "assets" / "cierre"
+CIERRE_DIR = rutas.DATOS / "cache" / "cierre" if rutas.LINUX else RAIZ / "assets" / "cierre"
 CIERRE_SEG = 2.5
 CIERRE_FONDO = (10, 13, 19)  # #0a0d13
-CIERRE_TEXTO = "Dcrypto Historias"
+CIERRE_TEXTO = "CompressOS Studio" if rutas.LINUX else "Dcrypto Historias"
 MARCA_OPACIDAD = 0.55
 
 
@@ -37,7 +40,13 @@ def _cacheado(nombre: str, crear) -> Path:
     CIERRE_DIR.mkdir(parents=True, exist_ok=True)
     ruta = CIERRE_DIR / nombre
     if not ruta.exists() or ruta.stat().st_mtime < LOGO.stat().st_mtime:
-        crear().save(ruta)
+        with tempfile.NamedTemporaryFile(dir=ruta.parent, suffix=".png", delete=False) as archivo:
+            temporal = Path(archivo.name)
+        try:
+            crear().save(temporal)
+            os.replace(temporal, ruta)
+        finally:
+            temporal.unlink(missing_ok=True)
     return ruta
 
 
