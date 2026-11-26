@@ -83,17 +83,24 @@ async function cargarEstudio(forzar = false) {
   } finally { ESTUDIO.cargando = false; }
 }
 
-/** Aviso si el prompt pasa del límite de CLIP (75 tokens): lo que sobra no llega a la imagen. */
+function resumenPresupuestoVisual(visual, conEstilo = false) {
+  const partes = [T(conEstilo ? "visual.escena" : "visual.estudio", visual)];
+  if (visual.palabras > visual.limite) partes.push(T("visual.recorte", visual));
+  if (visual.aviso) partes.push(T(visual.aviso.exacto ? "visual.tokens" : "visual.tokens_aprox", visual.aviso));
+  return partes.join(" ");
+}
+
+/** Muestra el presupuesto del texto que el Estudio envía al motor. */
 let tPromptEstudio = null;
 function revisarPromptEstudio() {
   clearTimeout(tPromptEstudio);
   tPromptEstudio = setTimeout(async () => {
     const texto = $("#estPrompt").value.trim(), nota = $("#estPromptLargo");
-    let aviso = null;
-    if (texto) { try { aviso = (await api("POST", "/api/prompt/clip", { texto })).data?.aviso; } catch { aviso = null; } }
+    let visual = null;
+    if (texto) { try { visual = (await api("POST", "/api/prompt/clip", { texto })).data; } catch { visual = null; } }
     if (texto !== $("#estPrompt").value.trim()) return;  // cambió mientras preguntaba: responde la siguiente
-    nota.hidden = !aviso;
-    nota.textContent = aviso ? T(aviso.exacto ? "est.prompt_largo" : "est.prompt_largo_aprox", { tokens: aviso.tokens, max: aviso.max }) : "";
+    nota.hidden = !visual;
+    nota.textContent = visual ? resumenPresupuestoVisual(visual) : "";
   }, 500);
 }
 

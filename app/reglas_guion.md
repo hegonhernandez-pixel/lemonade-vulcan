@@ -12,10 +12,11 @@ imagen generada por IA en cada escena.
 - `prompt`: descripción en inglés de la imagen de esa escena: lugar, época, luz, objeto o acción. Sin
   texto dentro de la imagen y sin nombres de personas reales (describe "a scientist in his 50s with a
   beard", no su nombre). El estilo visual se añade solo a cada prompt: no lo repitas. Evita manos y caras
-  en primer plano, y no pongas más de 2 personas en una imagen. **Corto:** el modelo de imagen solo lee
-  unas 75 piezas de texto (tokens) contando el estilo visual y, con `@nombre`, la descripción del
-  personaje; lo que pasa de ahí se corta y no sale en la imagen. Máximo **25 palabras** por prompt, y
-  **15 palabras** después de `@nombre` cuando hay personaje. Lo más importante va primero.
+  en primer plano, y no pongas más de 2 personas en una imagen. El prompt, el estilo y, con
+  `@nombre`, la descripción del personaje comparten **40 palabras visuales**. La narración
+  se cuenta aparte. Los **75 tokens** de CLIP son otra referencia, estimada en Vulkan.
+  Escribe hasta **25 palabras** de prompt, o **15 palabras** después de `@nombre`, y deja
+  margen para el estilo y la descripción. Lo más importante va primero.
 - **Personajes (`@nombre`)**: si te indican que una persona es un personaje (p. ej. "usa a @lucia"),
   escribe `@nombre` al **inicio** del `prompt` de cada escena donde aparece, y luego la acción y el
   lugar: `"@lucia reading a letter by a window, 1950s kitchen, morning light"`. La cara sale de sus

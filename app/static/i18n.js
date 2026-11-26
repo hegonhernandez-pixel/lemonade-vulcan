@@ -14,6 +14,12 @@
  */
 const I18N = /*JSON*/{
 "es": {
+  "visual.ajustes": "El prompt, la descripción del personaje y este estilo comparten 40 palabras visuales. Los subtítulos tienen su propio conteo.",
+  "visual.escena": "Imagen: {palabras}/{limite} palabras con estilo y personaje.",
+  "visual.estudio": "Imagen: {palabras}/{limite} palabras.",
+  "visual.recorte": "Se enviarán las primeras {limite} palabras.",
+  "visual.tokens": "El texto que se envía supera la referencia de CLIP: {tokens}/{max} tokens. Acórtalo para conservar los detalles.",
+  "visual.tokens_aprox": "El texto que se envía puede superar la referencia de CLIP: unos {tokens}/{max} tokens.",
   "comp.buscar_tema": "Buscar tema en Google",
   "comp.mejorar_prompt": "Mejorar prompt con IA",
   "comp.salir": "Cerrar sesión",
@@ -738,6 +744,12 @@ const I18N = /*JSON*/{
 },
 
 "en": {
+  "visual.ajustes": "The prompt, character description and style share a 40-word image budget. Subtitles are counted separately.",
+  "visual.escena": "Image: {palabras}/{limite} words including style and character.",
+  "visual.estudio": "Image: {palabras}/{limite} words.",
+  "visual.recorte": "The first {limite} words will be sent.",
+  "visual.tokens": "The text sent exceeds the CLIP reference: {tokens}/{max} tokens. Shorten it to preserve details.",
+  "visual.tokens_aprox": "The text sent may exceed the CLIP reference: about {tokens}/{max} tokens.",
   "comp.buscar_tema": "Research topic on Google",
   "comp.mejorar_prompt": "Improve prompt with AI",
   "comp.salir": "Sign out",

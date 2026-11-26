@@ -121,6 +121,7 @@ def construir_prompt(datos: dict, nota: str | None = None, actual: dict | None =
         "precisarlo. No uses \"// VERIFICAR\": el guion tiene que poder producirse tal cual.",
         "",
         "PROMPTS DE IMAGEN (campo 'prompt', en inglés):",
+        "- El prompt, la descripción del personaje y el estilo visual juntos tienen un máximo de 40 palabras. El texto narrado va aparte.",
         "- Sin texto en la imagen. Sin personas reales reconocibles: descríbelas por rasgos genéricos "
         "(\"a Soviet officer in his 40s in uniform\"), nunca por su nombre.",
         "- Nada de órganos, sangre, heridas ni gore. Sugiere en vez de mostrar.",

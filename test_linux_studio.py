@@ -70,3 +70,23 @@ class VulkanTest(unittest.TestCase):
                     result = vulkan.generar("Fog over the valley", "rapida", (640, 1152), 44,
                                            foto=Image.new("RGB", (640, 1152)))
                     self.assertEqual(result.size, (640, 1152))
+
+
+class PresupuestoVisualTest(unittest.TestCase):
+    def test_vulkan_receives_only_first_40_visual_words(self):
+        from pipeline import imagenes
+        from pipeline.guion import Escena, Guion
+
+        prompt = " ".join(f"scene{i}" for i in range(22))
+        estilo = " ".join(f"style{i}" for i in range(23))
+        escena = Escena(1, "narración " * 40, prompt)
+        guion = Guion("prueba", "Prueba", "short", "es-CO-GonzaloNeural", estilo)
+        esperado = f"{prompt}, " + " ".join(f"style{i}" for i in range(18))
+        with tempfile.TemporaryDirectory() as directorio, \
+                patch.object(vulkan, "activo", return_value=True), \
+                patch.object(vulkan, "generar", return_value=Image.new("RGB", (32, 32))) as generar:
+            visual = imagenes.prompt_final(guion, escena)
+            self.assertEqual(imagenes.presupuesto_visual(visual)["palabras"], 45)
+            self.assertEqual(imagenes.limitar_prompt(esperado), esperado)
+            imagenes.generar_escena(guion, escena, Path(directorio))
+            self.assertEqual(generar.call_args.args[0], esperado)

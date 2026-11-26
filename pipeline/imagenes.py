@@ -3,6 +3,7 @@
   alta:   SDXL base 1.0, 25 pasos con guidance; mucho más lenta
 Con --demo genera placeholders sin GPU."""
 import hashlib
+import re
 import shutil
 import sys
 import threading
@@ -221,6 +222,8 @@ def modelo_cargado() -> str | None:
 # Los dos codificadores de texto de SDXL (CLIP) leen 77 tokens, dos de ellos de control: lo que pasa de
 # CLIP_MAX tokens se corta en silencio y no llega a la imagen (por eso se avisa).
 CLIP_MAX = 75
+MAX_PALABRAS_VISUALES = 40
+PALABRA_VISUAL = re.compile(r"\b\w+(?:[-’']\w+)*\b")
 REINTENTO_TOKENIZER_S = 60
 _tokenizador = None  # CLIPTokenizer, o False si no se pudo cargar (mientras tanto se estima)
 _tokenizador_fallo = 0.0
@@ -268,7 +271,21 @@ def prompt_final(g: Guion, e: Escena) -> str:
         base = personajes.resolver(e.prompt).prompt
     except ValueError:  # personaje que no existe: el error sale al generar; aquí se cuenta tal cual
         base = e.prompt
-    return f"{base}, {g.estilo_visual}"
+    return combinar_prompt(base, g.estilo_visual)
+
+
+def combinar_prompt(base: str, estilo: str) -> str:
+    return ", ".join(parte.strip() for parte in (base, estilo) if parte.strip())
+
+
+def limitar_prompt(texto: str) -> str:
+    palabras = list(PALABRA_VISUAL.finditer(texto))
+    return texto[:palabras[MAX_PALABRAS_VISUALES - 1].end()] if len(palabras) > MAX_PALABRAS_VISUALES else texto
+
+
+def presupuesto_visual(texto: str) -> dict:
+    palabras = len(PALABRA_VISUAL.findall(texto))
+    return {"palabras": palabras, "limite": MAX_PALABRAS_VISUALES, "aviso": aviso_clip(limitar_prompt(texto))}
 
 
 def aviso_clip(texto: str) -> dict | None:
@@ -286,6 +303,7 @@ def generar_estudio(prompt: str, calidad: str, size: tuple[int, int], seed: int,
     El pipeline img2img es una vista temporal de los mismos componentes. Sus hooks
     se retiran y el offload de texto se restaura incluso si la inferencia falla.
     """
+    prompt = limitar_prompt(prompt)
     if vulkan.activo():
         if progreso:
             progreso("cargado", 0)
@@ -350,6 +368,10 @@ def hash_imagen(g: Guion, e: Escena, demo: bool = False, calidad: str = "rapida"
         modelo = vulkan.ruta_modelo(q)
         version = modelo.stat().st_mtime_ns if modelo and modelo.is_file() else 0
         base += f"|vulkan|{q}|{modelo}|{version}"
+    if not demo:
+        visual = prompt_final(g, e)
+        if limitar_prompt(visual) != visual:
+            base += "|visual-40"
     nombres = personajes.menciones(e.prompt)
     if nombres:  # el personaje, sus fotos y su fuerza: si cambia una referencia, la imagen se regenera
         try:
@@ -457,10 +479,11 @@ def generar_escena(g: Guion, e: Escena, carpeta: Path, demo: bool = False, calid
     if demo:
         _placeholder(ruta, f"[{e.idx}] {r.prompt}", size, seed)
         return ruta, False
+    prompt = limitar_prompt(combinar_prompt(r.prompt, g.estilo_visual))
     if vulkan.activo():
         perfil = calidad_de(e, calidad)
         ref = _referencias(r.personaje) if r.personaje else ()
-        img = vulkan.generar(f"{r.prompt}, {g.estilo_visual}", perfil, size, seed, negativo=NEGATIVO,
+        img = vulkan.generar(prompt, perfil, size, seed, negativo=NEGATIVO,
                             pasos=pasos, referencias=ref, fuerza=r.personaje.fuerza if r.personaje else 0.5)
         img.save(ruta, quality=94)
         return ruta, False
@@ -476,7 +499,6 @@ def generar_escena(g: Guion, e: Escena, carpeta: Path, demo: bool = False, calid
     refs = _referencias(r.personaje) if r.personaje and not usar_vulkan else None
     if r.personaje:
         decir("log.personaje", nombre=r.personaje.nombre, fuerza=f"{r.personaje.fuerza:.2f}", n=len(refs))
-    prompt = f"{r.prompt}, {g.estilo_visual}"
     if largo := aviso_clip(prompt):
         decir("log.prompt_largo", n=f"{e.idx:02d}", tokens=largo["tokens"], max=largo["max"])
     if usar_vulkan:

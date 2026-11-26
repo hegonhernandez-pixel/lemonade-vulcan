@@ -712,6 +712,7 @@ audio { width:100%; margin:8px 0; }
           <select id="aFormato"><option value="short" data-i18n="aj.short"></option><option value="largo" data-i18n="aj.largo"></option></select></label>
         <div class="chips" id="aEstilos"></div>
         <label class="campo"><span data-i18n="idea.estilo"></span><textarea id="aEstilo" rows="3"></textarea></label>
+        <p class="nota" data-i18n="visual.ajustes"></p>
         <label class="campo"><span data-i18n="aj.cierre_es"></span><input id="aCierreEs" type="text" maxlength="150" data-i18n-ph="aj.cierre_ph_es"></label>
         <label class="campo"><span data-i18n="aj.cierre_en"></span><input id="aCierreEn" type="text" maxlength="150" data-i18n-ph="aj.cierre_ph_en"></label>
         <p class="nota" style="margin-top:-6px" data-i18n="aj.cierre_d"></p>
@@ -1796,10 +1797,9 @@ function actualizarEstados() {
     const pz = $("[data-pausa]", card);
     if (document.activeElement !== pz && +pz.value !== (e.pausa || 0)) pz.value = e.pausa || 0;
     $("[data-qajuste]", card).textContent = T("escena.calidad_ajustes", { calidad: T(S.ajustes.calidad === "alta" ? "cal.alta" : "cal.rapida") });
-    // el prompt final (con @personaje y estilo) pasa del límite de CLIP: el final se corta
-    const largo = !e.media && s.prompt_largo, pl = $("[data-prompt-largo]", card);
-    pl.hidden = !largo;
-    pl.textContent = largo ? T(largo.exacto ? "escena.prompt_largo" : "escena.prompt_largo_aprox", { tokens: largo.tokens, max: largo.max }) : "";
+    const visual = !e.media && s.presupuesto_visual, pl = $("[data-prompt-largo]", card);
+    pl.hidden = !visual;
+    pl.textContent = visual ? resumenPresupuestoVisual(visual, true) : "";
   });
 
   const m = $("#gMetricas");

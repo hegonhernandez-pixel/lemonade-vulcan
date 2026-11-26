@@ -342,8 +342,7 @@ def detalle(slug: str) -> dict:
                           "falta": not propio.exists(), **clip_info} if propio else None,
                 "calidad_img": q if img else None,  # la de la imagen que se ve (puede no ser la que toca)
                 "calidad": imagenes.calidad_de(e, calidad),  # la que se usará al producir
-                # el prompt (con @personaje y estilo) pasa del límite de CLIP: el final no llega a la imagen
-                "prompt_largo": imagenes.aviso_clip(imagenes.prompt_final(g, e)) if e.prompt and not e.media else None,
+                "presupuesto_visual": imagenes.presupuesto_visual(imagenes.prompt_final(g, e)) if e.prompt and not e.media else None,
                 "voz": url(meta.with_suffix(".mp3")) if meta else None,
                 "duracion": json.loads(meta.read_text(encoding="utf-8"))["duracion"] if meta else None,
             })
@@ -1502,7 +1501,7 @@ def prompt_clip(cuerpo: dict = Body(...)):
     texto = cuerpo.get("texto") if isinstance(cuerpo, dict) else None
     if not isinstance(texto, str) or len(texto) > 4000:
         raise HTTPException(400, Texto("est.err_prompt"))
-    return {"aviso": imagenes.aviso_clip(texto)}
+    return imagenes.presupuesto_visual(texto)
 
 
 @api.post("/api/cerrar")
