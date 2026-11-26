@@ -39,6 +39,21 @@ def preparar_catalogo():
                 pass
 
 
+    # Incorporar las pistas nuevas una vez para instalaciones existentes.
+    marca = CARPETA / ".cinematica-v1"
+    if not marca.exists():
+        for mood in MOODS:
+            origen = RAIZ / "assets" / "musica-incluida" / mood / f"Cinematica-{mood}.mp3"
+            if origen.is_file():
+                destino = CARPETA / mood / origen.name
+                try:
+                    with destino.open("xb") as archivo:
+                        archivo.write(origen.read_bytes())
+                except FileExistsError:
+                    pass
+        marca.touch()
+
+
 def resolver(musica: str | None, slug: str) -> Path | None:
     """'musica' puede ser un mood ("tension") o una ruta. Para un mood se elige una pista de forma
     determinista por slug: la de mayor hash(slug + nombre). Así, mismo guion = misma pista, y
