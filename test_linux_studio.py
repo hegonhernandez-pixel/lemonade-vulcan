@@ -90,3 +90,22 @@ class PresupuestoVisualTest(unittest.TestCase):
             self.assertEqual(imagenes.limitar_prompt(esperado), esperado)
             imagenes.generar_escena(guion, escena, Path(directorio))
             self.assertEqual(generar.call_args.args[0], esperado)
+
+
+class AuthOptInTest(unittest.TestCase):
+    def test_legacy_project_url_does_not_enable_auth(self):
+        with patch.object(auth.rutas, "LINUX", True), patch.dict(os.environ, {
+            "SUPABASE_URL": "https://example.supabase.co",
+            "COMPRESSO_AUTH_ENABLED": "0",
+            "COMPRESSO_LOCAL_DEMO": "0",
+        }):
+            self.assertFalse(auth.activa())
+
+    def test_explicit_auth_and_demo_override(self):
+        with patch.object(auth.rutas, "LINUX", True), patch.dict(os.environ, {
+            "COMPRESSO_AUTH_ENABLED": "1",
+            "COMPRESSO_LOCAL_DEMO": "0",
+        }):
+            self.assertTrue(auth.activa())
+            with patch.dict(os.environ, {"COMPRESSO_LOCAL_DEMO": "1"}):
+                self.assertFalse(auth.activa())

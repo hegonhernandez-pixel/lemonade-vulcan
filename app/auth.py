@@ -17,7 +17,7 @@ router = APIRouter()
 
 
 def activa():
-    return rutas.LINUX and os.environ.get("COMPRESSO_LOCAL_DEMO") != "1"
+    return rutas.LINUX and os.environ.get("COMPRESSO_AUTH_ENABLED") == "1" and os.environ.get("COMPRESSO_LOCAL_DEMO") != "1"
 
 
 def configuracion():
