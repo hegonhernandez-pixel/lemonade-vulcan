@@ -1,0 +1,3317 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e1014">
+<title>Dcrypto Studio</title>
+<link rel="icon" type="image/svg+xml" href="/logo/logo_dcrypto_studio.svg">
+<link rel="icon" type="image/png" sizes="256x256" href="/logo/logo_dcrypto_studio_256.png">
+<link rel="apple-touch-icon" href="/logo/logo_dcrypto_studio_256.png">
+<script src="/i18n.js"></script>
+<script src="/estudio.js"></script>
+<style>
+:root {
+  --bg: #0e1014; --panel: #161920; --panel-2: #1d2129; --borde: #2a2f3a; --borde-2: #363c4a;
+  --texto: #e7e9ee; --texto-2: #a3a9b6; --texto-3: #6f7685;
+  --acento: #e8a33d; --acento-2: #f2bb63; --acento-txt: #1a1206;
+  --ok: #4cc38a; --info: #5aa9e6; --aviso: #e8c33d; --error: #ef6461;
+  --radio: 12px; --radio-s: 8px;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--texto);
+  font: 14px/1.45 system-ui, "Segoe UI", Roboto, sans-serif; -webkit-text-size-adjust: 100%; }
+button, input, select, textarea { font: inherit; color: inherit; }
+a { color: var(--acento-2); }
+[hidden] { display: none !important; }
+
+/* ---------- cabecera ---------- */
+header { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 16px;
+  padding: 10px 20px; background: rgba(14,16,20,.92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--borde); }
+.marca { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: .2px; white-space: nowrap; }
+.marca img { width: 26px; height: 26px; display: block; flex: none; }
+nav { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+nav button { background: none; border: 0; padding: 8px 14px; border-radius: 999px; color: var(--texto-2); cursor: pointer; white-space: nowrap; }
+nav button:hover { color: var(--texto); background: var(--panel); }
+nav button.activa { color: var(--acento-txt); background: var(--acento); font-weight: 600; }
+.cola-global { margin-left: auto; font-size: 12px; color: var(--texto-2); white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+.idioma-ui { margin-left: auto; display: flex; align-items: center; gap: 4px; color: var(--texto-2); font-size: 13px; flex: none; }
+.cola-global:not([hidden]) ~ .idioma-ui { margin-left: 0; }
+.btn-cerrar-app { flex: none; width: auto; display: inline-flex; align-items: center; justify-content: center; background: none; border: 1px solid var(--borde); border-radius: var(--radio-s); color: var(--texto-2); padding: 4px 9px; font-size: 14px; line-height: 1; cursor: pointer; }
+.btn-cerrar-app:hover, .btn-cerrar-app:focus-visible { color: var(--error); border-color: var(--error); }
+.aviso-version { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 12px 20px 0; padding: 8px 12px; border: 1px solid var(--borde-2); border-radius: var(--radio-s); background: var(--panel); font-size: 13px; color: var(--texto-2); }
+.aviso-version[hidden] { display: none; }
+.aviso-version .notas { flex: 1 1 260px; color: var(--texto-3); font-size: 12px; }
+.aviso-version a { color: var(--acento-2); font-weight: 600; text-decoration: none; }
+.aviso-version a:hover { text-decoration: underline; }
+.aviso-version button { width: auto; margin-left: auto; background: none; border: 0; color: var(--texto-3); font-size: 16px; cursor: pointer; padding: 2px 6px; }
+.app-cerrada { min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; text-align: center; }
+.app-cerrada img { width: 64px; height: 64px; margin-bottom: 14px; }
+.app-cerrada h1 { font-size: 22px; margin: 0 0 8px; }
+.app-cerrada p { color: var(--texto-2); margin: 0; }
+.prompt-largo { margin: 4px 0 0; font-size: 12px; color: var(--aviso); }
+.prompt-largo[hidden] { display: none; }
+.idioma-ui select { width: auto; padding: 5px 26px 5px 8px; font-size: 12px; font-weight: 600; background-color: var(--panel); }
+main { padding: 20px; max-width: 1680px; margin: 0 auto; }
+
+/* ---------- piezas comunes ---------- */
+.panel { background: var(--panel); border: 1px solid var(--borde); border-radius: var(--radio); padding: 16px; min-width: 0; }
+.panel > h2 { margin: 0 0 14px; font-size: 13px; text-transform: uppercase; letter-spacing: .8px; color: var(--texto-2); display: flex; align-items: center; gap: 8px; }
+.panel > h2 .n { width: 20px; height: 20px; border-radius: 50%; background: var(--panel-2); border: 1px solid var(--borde-2); display: grid; place-items: center; font-size: 11px; color: var(--texto); }
+label.campo { display: block; margin-bottom: 14px; }
+label.campo > span, .etq-campo { display: block; font-size: 12px; color: var(--texto-2); margin-bottom: 6px; }
+input[type=text], input[type=number], input[type=password], select, textarea {
+  width: 100%; background: var(--panel-2); border: 1px solid var(--borde); border-radius: var(--radio-s);
+  padding: 9px 11px; outline: none; transition: border-color .15s; }
+input:focus, select:focus, textarea:focus { border-color: var(--acento); }
+textarea { resize: vertical; min-height: 44px; }
+select { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--texto-2) 50%), linear-gradient(135deg, var(--texto-2) 50%, transparent 50%);
+  background-position: calc(100% - 16px) 55%, calc(100% - 11px) 55%; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 30px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 9px 14px; border-radius: var(--radio-s);
+  border: 1px solid var(--borde-2); background: var(--panel-2); cursor: pointer; white-space: nowrap; text-decoration: none; color: var(--texto); }
+.btn:hover:not(:disabled) { border-color: var(--texto-3); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn.primario { background: var(--acento); border-color: var(--acento); color: var(--acento-txt); font-weight: 600; }
+.btn.primario:hover:not(:disabled) { background: var(--acento-2); }
+.btn.grande { width: 100%; padding: 12px; font-size: 15px; }
+.btn.chico { padding: 5px 9px; font-size: 12px; }
+.btn.fantasma { background: none; border-color: transparent; color: var(--texto-2); }
+.btn.fantasma:hover:not(:disabled) { color: var(--texto); background: var(--panel-2); }
+.fila { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.segmentado { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; background: var(--panel-2); border: 1px solid var(--borde); border-radius: var(--radio-s); padding: 3px; }
+.segmentado button { border: 0; background: none; padding: 7px; border-radius: 6px; cursor: pointer; color: var(--texto-2); }
+.segmentado button.activa { background: var(--borde-2); color: var(--texto); font-weight: 600; }
+.segmentado small { display: block; font-size: 11px; color: var(--texto-3); font-weight: 400; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.chip { border: 1px solid var(--borde-2); background: none; border-radius: 999px; padding: 4px 10px; font-size: 12px; color: var(--texto-2); cursor: pointer; }
+.chip:hover { color: var(--texto); }
+.chip.activa { border-color: var(--acento); color: var(--acento-2); }
+.nota { font-size: 12px; color: var(--texto-3); }
+.badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; text-transform: uppercase; letter-spacing: .4px; white-space: nowrap; }
+.badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.b-idea { color: var(--texto-2); background: #ffffff10; }
+.b-guion { color: var(--info); background: #5aa9e61c; }
+.b-generando { color: var(--aviso); background: #e8c33d1c; }
+.b-listo { color: var(--ok); background: #4cc38a1c; }
+.b-error { color: var(--error); background: #ef64611c; }
+.b-generando::before { animation: latido 1s infinite; }
+@keyframes latido { 50% { opacity: .25; } }
+.giro { width: 14px; height: 14px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: giro .8s linear infinite; display: inline-block; flex: none; }
+@keyframes giro { to { transform: rotate(360deg); } }
+
+/* ---------- Nuevo video: 3 columnas ---------- */
+.estudio { display: grid; grid-template-columns: minmax(260px, 320px) minmax(0, 1fr) minmax(300px, 400px); gap: 16px; align-items: start; }
+.estudio > .panel { position: sticky; top: 72px; max-height: calc(100vh - 92px); overflow-y: auto; }
+.estudio > .panel.guion { position: static; max-height: none; overflow: visible; }
+@media (max-width: 1180px) {
+  .estudio { grid-template-columns: minmax(250px, 300px) minmax(0, 1fr); }
+  .estudio > .panel.vista { grid-column: 1 / -1; position: static; max-height: none; }
+}
+@media (max-width: 760px) {
+  main { padding: 12px; }
+  header { padding: 8px 12px; gap: 10px; }
+  .marca span { display: none; }
+  .estudio { grid-template-columns: minmax(0, 1fr); }
+  .estudio > .panel { position: static; max-height: none; padding: 12px; }
+  .cola-global .txt { display: none; }
+  .escena { padding: 8px; gap: 8px; }
+  .escena.vertical { --mini-w: 64px; }
+  .escena.horizontal { --mini-w: 104px; }
+  .esc-acc { margin-left: 0; width: 100%; justify-content: space-between; }
+  .esc-acc .btn { min-width: 34px; padding: 6px; }
+}
+.slug { font-family: var(--mono); font-size: 12px; color: var(--texto-3); word-break: break-all; }
+.musica-sel { display: flex; gap: 6px; }
+.musica-sel select { flex: 1; min-width: 0; }
+.musica-sel .btn { padding: 8px 11px; }
+#musicaInfo { font-size: 12px; color: var(--texto-2); margin-top: 6px; }
+#musicaInfo .aviso { color: var(--aviso); background: #e8c33d14; border-radius: 6px; padding: 7px 9px; display: block; }
+.musica-subir { display: flex; align-items: center; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.musica-subir select { width: auto; flex: 1; padding: 5px 28px 5px 8px; font-size: 12px; }
+#pruebaCaja { margin-top: 8px; font-size: 12px; color: var(--texto-2); }
+#pruebaCaja video { width: 100%; max-height: 260px; background: #000; border-radius: var(--radio-s); margin-top: 6px; display: block; }
+.volumen { display: flex; align-items: center; gap: 10px; margin-top: 8px; font-size: 12px; color: var(--texto-2); }
+.volumen input { flex: 1; accent-color: var(--acento); }
+.reescribir { display: grid; gap: 6px; margin-top: 8px; }
+.motor-etq { color: var(--texto-3); font-weight: 400; text-transform: none; letter-spacing: 0; }
+.aviso-voz { margin: 6px 0 0; color: var(--aviso); }
+#bOtroVideo { margin-top: 12px; }
+.idioma-voz { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 8px; }
+dialog.modal { width: min(860px, calc(100vw - 24px)); max-height: calc(100vh - 24px); padding: 0; border: 1px solid var(--borde-2);
+  border-radius: var(--radio); background: var(--panel); color: var(--texto); box-shadow: 0 20px 60px rgba(0,0,0,.6); }
+dialog.modal::backdrop { background: rgba(0,0,0,.65); }
+dialog.modal form { display: grid; gap: 12px; padding: 18px; }
+dialog.modal h3 { margin: 0; font-size: 16px; }
+dialog.modal textarea { font-family: var(--mono); font-size: 12px; min-height: 46vh; resize: vertical; }
+dialog.modal .errores { margin: 0; padding: 10px 12px 10px 28px; border-radius: 6px; background: #ef646114; color: #ffb3b1; font-size: 13px; }
+dialog.modal .errores li + li { margin-top: 3px; }
+dialog.modal textarea.medio { min-height: 22vh; }
+dialog.modal textarea[readonly] { color: var(--texto-2); background: var(--panel-2); }
+dialog.modal .etq-campo { margin: 0; }
+dialog.modal.confirmacion { width:min(480px, calc(100vw - 32px)); padding:24px; border-radius:16px; box-shadow:0 24px 80px #0009; }
+.confirmacion-cab { display:flex; align-items:center; gap:12px; margin-bottom:16px; }
+.confirmacion-icono { display:grid; place-items:center; width:34px; height:34px; flex:none; border-radius:50%; background:#e8a33d1a; color:var(--acento-2); font-size:20px; font-weight:700; }
+.confirmacion p { white-space:pre-wrap; overflow-wrap:anywhere; color:var(--texto-2); margin:0 0 24px; line-height:1.6; }
+.confirmacion-botones { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:8px; }
+.confirmacion button:focus-visible { outline:2px solid var(--acento-2); outline-offset:3px; }
+@media(prefers-reduced-motion:reduce) { .toast { animation:none; } }
+.escribiendo { text-align: center; padding: 40px 16px; border: 1px dashed var(--borde-2); border-radius: var(--radio); }
+.escribiendo .giro { width: 28px; height: 28px; border-width: 3px; color: var(--acento); }
+.escribiendo h4 { margin: 14px 0 4px; font-size: 16px; }
+.escribiendo .reloj { font-family: var(--mono); font-size: 13px; color: var(--texto-2); }
+.escribiendo ul { list-style: none; padding: 0; margin: 14px auto; max-width: 520px; font-size: 12px; color: var(--texto-2); text-align: left; }
+
+/* columna guion */
+.guion-cab { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+.guion-cab h3 { margin: 0 0 4px; font-size: 18px; line-height: 1.25; }
+.metricas { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--texto-2); }
+.metricas b { color: var(--texto); font-weight: 600; }
+.metricas .mal b { color: var(--error); }
+.estado-guardado { font-size: 12px; color: var(--texto-3); white-space: nowrap; }
+.avisos { margin: 0 0 12px; padding: 0; list-style: none; display: grid; gap: 6px; }
+.avisos li { font-size: 12px; padding: 7px 10px; border-radius: 6px; background: #e8c33d14; color: var(--aviso); }
+.avisos li.error { background: #ef646114; color: var(--error); }
+.escenas { display: grid; gap: 10px; }
+.escena { display: grid; grid-template-columns: var(--mini-w, 96px) minmax(0, 1fr); gap: 12px; padding: 10px; background: var(--panel-2); border: 1px solid var(--borde); border-radius: var(--radio); transition: border-color .15s; }
+.escena:focus-within { border-color: var(--borde-2); }
+.escena.vertical { --mini-w: 96px; }
+.escena.horizontal { --mini-w: 150px; }
+.mini { position: relative; border-radius: var(--radio-s); overflow: hidden; background: #0a0c10; border: 1px solid var(--borde); align-self: start; }
+.vertical .mini { aspect-ratio: 9 / 16; }
+.horizontal .mini { aspect-ratio: 16 / 9; }
+.mini img { width: 100%; height: 100%; object-fit: cover; display: block; cursor: zoom-in; }
+.clip-opciones { display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; padding:10px; border:1px solid var(--borde); border-radius:var(--radio-s); }
+.clip-opciones label { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--texto-2); }
+.clip-opciones input { width:85px; }
+.clip-opciones .nota { flex-basis:100%; margin:0; }
+.clip-preview { padding:16px; width:min(840px,calc(100vw - 24px)); }
+.clip-preview .fila { justify-content:space-between; margin-bottom:12px; }
+.clip-preview video { display:block; width:100%; max-height:70vh; background:#000; }
+.mini .vacio { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; font-size: 11px; color: var(--texto-3); padding: 6px; }
+.mini .vacio.falta { place-content: center; gap: 8px; color: var(--error, #e5484d); word-break: break-all; padding-bottom: 22px; }
+.mini .vacio.falta .btn { font-size: 12px; padding: 6px 10px; white-space: nowrap; }
+.mini .capa { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 6px; background: rgba(10,12,16,.72); color: var(--acento-2); font-size: 11px; }
+.esc-cuerpo { min-width: 0; display: grid; gap: 6px; }
+.esc-cab { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.esc-num { font-weight: 700; font-size: 13px; width: 24px; height: 24px; border-radius: 6px; background: var(--borde); display: grid; place-items: center; flex: none; }
+.esc-meta { font-size: 12px; color: var(--texto-3); display: flex; gap: 10px; align-items: center; }
+.esc-meta .largo { color: var(--error); font-weight: 600; }
+.esc-meta .voz-pend { color: var(--aviso); }
+.esc-acc { margin-left: auto; display: flex; flex-wrap: wrap; max-width: 100%; min-width: 0; gap: 2px; }
+.esc-acc .btn { padding: 4px 7px; font-size: 13px; min-width: 30px; }
+.esc-acc .btn.peligro:hover { color: var(--error); }
+.escena textarea { background: var(--panel); min-height: 0; }
+.escena textarea.texto { font-size: 15px; line-height: 1.45; }
+.escena textarea.prompt { font-family: var(--mono); font-size: 12px; color: var(--texto-2); }
+.etq { font-size: 11px; color: var(--texto-3); text-transform: uppercase; letter-spacing: .6px; }
+.pers-n { display: block; margin-top: 4px; font-size: 18px; }
+.etq-fila { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.sugerido { font-size: 11px; color: var(--aviso); background: #e8c33d14; border-radius: 4px; padding: 1px 6px; }
+#sinIA { margin: 6px 0 0; color: var(--aviso); }
+.clave-estado { display: flex; align-items: center; gap: 8px; margin-top: 6px; font-size: 12px; color: var(--texto-2); }
+.anadir { width: 100%; margin-top: 10px; border-style: dashed; color: var(--texto-2); }
+.vacio-guion { text-align: center; padding: 36px 16px; color: var(--texto-2); border: 1px dashed var(--borde-2); border-radius: var(--radio); }
+.vacio-guion h4 { margin: 0 0 6px; color: var(--texto); font-size: 15px; }
+
+/* columna vista previa */
+.reproductor { background: #000; border-radius: var(--radio-s); overflow: hidden; display: grid; place-items: center; margin: 0 auto 10px; border: 1px solid var(--borde); }
+.reproductor.vertical { aspect-ratio: 9 / 16; max-height: 62vh; width: auto; }
+.reproductor.horizontal { aspect-ratio: 16 / 9; width: 100%; }
+.reproductor video { width: 100%; height: 100%; display: block; }
+.reproductor .sin { color: var(--texto-3); font-size: 13px; text-align: center; padding: 20px; }
+.video-info { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; color: var(--texto-2); margin-bottom: 12px; flex-wrap: wrap; }
+.barra { height: 8px; border-radius: 999px; background: var(--panel-2); overflow: hidden; border: 1px solid var(--borde); }
+.barra i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--acento), var(--acento-2)); transition: width .4s; }
+.progreso-txt { display: flex; justify-content: space-between; font-size: 12px; color: var(--texto-2); margin: 6px 0 12px; }
+.pasos { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 2px; max-height: 300px; overflow-y: auto; }
+.pasos li { display: grid; grid-template-columns: 18px 1fr auto; align-items: center; gap: 8px; font-size: 13px; padding: 4px 6px; border-radius: 6px; color: var(--texto-2); }
+.pasos li.corriendo { background: #e8a33d14; color: var(--texto); }
+.pasos li.ok, .pasos li.cache { color: var(--texto); }
+.pasos .ic { width: 16px; height: 16px; display: grid; place-items: center; font-size: 12px; }
+.pasos .ok .ic { color: var(--ok); }
+.pasos .cache .ic { color: var(--info); }
+.pasos .error .ic { color: var(--error); }
+.pasos .corriendo .ic { color: var(--acento); }
+.pasos .seg { font-size: 11px; color: var(--texto-3); font-family: var(--mono); }
+details.log summary { cursor: pointer; font-size: 12px; color: var(--texto-2); margin-bottom: 6px; }
+details.log pre { margin: 0; max-height: 240px; overflow: auto; background: #08090c; border: 1px solid var(--borde); border-radius: var(--radio-s); padding: 10px; font: 11px/1.5 var(--mono); color: #b9c0cc; white-space: pre-wrap; word-break: break-word; }
+.sub { margin: 20px 0 10px; padding-top: 16px; border-top: 1px solid var(--borde); font-size: 13px; text-transform: uppercase; letter-spacing: .8px; color: var(--texto-2); }
+.mini-prev { position: relative; background: #0a0c10; border: 1px solid var(--borde); border-radius: var(--radio-s); overflow: hidden; margin: 0 auto 10px; display: grid; place-items: center; }
+.mini-prev.vertical { aspect-ratio: 9 / 16; max-height: 360px; }
+.mini-prev.horizontal { aspect-ratio: 16 / 9; width: 100%; }
+.mini-prev img { width: 100%; height: 100%; object-fit: cover; display: block; cursor: zoom-in; }
+.mini-prev .sin { color: var(--texto-3); font-size: 12px; text-align: center; padding: 12px; }
+.mini-prev .capa { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 6px; background: rgba(10,12,16,.72); color: var(--acento-2); font-size: 12px; }
+.contador { float: right; font-size: 11px; color: var(--texto-3); }
+.contador.mal { color: var(--error); font-weight: 600; }
+.error-box { font-size: 12px; color: var(--error); background: #ef646114; border-radius: 6px; padding: 8px 10px; margin-bottom: 10px; white-space: pre-wrap; }
+
+/* ---------- biblioteca ---------- */
+.bib-cab { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.bib-cab h1 { margin: 0; font-size: 22px; }
+.rejilla { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+.tarjeta { background: var(--panel); border: 1px solid var(--borde); border-radius: var(--radio); overflow: hidden; cursor: pointer; transition: transform .15s, border-color .15s; display: flex; flex-direction: column; text-align: left; padding: 0; }
+.tarjeta:hover { border-color: var(--borde-2); transform: translateY(-2px); }
+.tarjeta .portada { aspect-ratio: 16 / 10; background: #0a0c10 center / cover no-repeat; position: relative; display: grid; place-items: center; color: var(--texto-3); font-size: 12px; }
+.tarjeta .portada .badge { position: absolute; top: 8px; left: 8px; backdrop-filter: blur(6px); background: rgba(10,12,16,.75); }
+.tarjeta .portada .fmt { position: absolute; top: 8px; right: 8px; font-size: 11px; padding: 2px 7px; border-radius: 5px; background: rgba(10,12,16,.75); color: var(--texto-2); }
+.tarjeta .cuerpo { padding: 12px; display: grid; gap: 6px; flex: 1; }
+.tarjeta h3 { margin: 0; font-size: 14px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.tarjeta .meta { font-size: 12px; color: var(--texto-3); display: flex; gap: 10px; flex-wrap: wrap; margin-top: auto; }
+.tarjeta:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
+.menu-tarjeta { margin-left: auto; position: relative; }
+.menu-tarjeta summary { list-style: none; cursor: pointer; padding: 0 8px; border-radius: 6px; color: var(--texto-2); font-size: 16px; line-height: 20px; letter-spacing: 1px; }
+.menu-tarjeta summary::-webkit-details-marker, .menu-img summary::-webkit-details-marker { display: none; }
+.menu-tarjeta summary:hover, .menu-tarjeta[open] summary { color: var(--texto); background: var(--panel-2); }
+.menu-tarjeta > div, .menu-img > div { position: absolute; right: 0; bottom: calc(100% + 4px); z-index: 5; min-width: 130px; display: grid; padding: 4px;
+  background: var(--panel-2); border: 1px solid var(--borde-2); border-radius: var(--radio-s); box-shadow: 0 8px 24px rgba(0,0,0,.45); }
+.menu-tarjeta > div button, .menu-img > div button { background: none; border: 0; text-align: left; padding: 7px 10px; border-radius: 5px; cursor: pointer; font-size: 13px; color: var(--texto); white-space: nowrap; }
+.menu-tarjeta > div button:hover, .menu-img > div button:hover { background: var(--borde); }
+.menu-tarjeta > div button.peligro { color: var(--error); }
+.menu-img { position: relative; }
+.menu-img summary { list-style: none; }
+.menu-img > div { bottom: auto; top: calc(100% + 4px); min-width: 170px; }
+.menu-img > div small { display: block; color: var(--texto-3); font-size: 11px; }
+.menu-img.deshab summary { opacity: .45; pointer-events: none; }
+.mini .q { position: absolute; left: 5px; bottom: 5px; font-size: 9px; font-weight: 700; letter-spacing: .5px; padding: 1px 5px; border-radius: 4px;
+  background: rgba(10,12,16,.8); color: var(--acento-2); pointer-events: none; }
+.mini .q.otra { color: var(--texto-3); }
+.mini .q.propia { color: var(--ok); }
+.pausa-caja { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--texto-3); }
+.pausa-caja input { width: 72px; padding: 4px 8px; background: var(--panel); font-size: 12px; }
+.tarjeta.nueva { border-style: dashed; align-items: center; justify-content: center; min-height: 220px; color: var(--texto-2); font-size: 15px; gap: 8px; background: none; }
+.tarjeta.nueva b { font-size: 34px; font-weight: 300; color: var(--acento); }
+
+/* ---------- subtítulos ---------- */
+.subs-ctl div.campo { margin-bottom: 14px; }
+.subs-ctl .colores { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.subs-ctl .colores label { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--texto-2);
+  background: var(--panel-2); border: 1px solid var(--borde); border-radius: var(--radio-s); padding: 6px 8px 6px 11px; }
+.subs-ctl input[type=color] { width: 36px; height: 26px; border: 0; padding: 0; background: none; cursor: pointer; }
+.subs-ctl input[type=range] { width: 100%; accent-color: var(--acento); }
+.subs-ctl .campo > span b { color: var(--texto); font-weight: 600; }
+.muestra { margin-top: 8px; padding: 12px; border-radius: var(--radio-s); background: linear-gradient(135deg, #2b3a35, #3b2f22);
+  font-size: 24px; line-height: 1.15; text-align: center; paint-order: stroke fill; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.muestra .k { color: #f2b84b; }
+.preview-subs { margin-top: 10px; }
+.preview-subs img { display: block; max-width: 100%; max-height: 520px; margin: 0 auto; border-radius: var(--radio-s); border: 1px solid var(--borde); cursor: zoom-in; }
+.preview-subs .nota { text-align: center; margin-top: 4px; }
+details.subs-guion { margin-bottom: 14px; border: 1px solid var(--borde); border-radius: var(--radio-s); padding: 10px 12px; background: var(--panel-2); }
+details.subs-guion summary { cursor: pointer; font-size: 12px; color: var(--texto-2); }
+details.subs-guion summary b { color: var(--texto); font-weight: 600; }
+details.subs-guion[open] summary { margin-bottom: 12px; }
+details.subs-guion select, details.subs-guion input[type=text] { background: var(--panel); }
+.panel.ancho { grid-column: span 2; }
+@media (max-width: 760px) { .panel.ancho { grid-column: auto; } }
+.subs-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
+@media (max-width: 1000px) { .subs-cols { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---------- personajes ---------- */
+.personajes { display: grid; grid-template-columns: minmax(280px, 360px) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 900px) { .personajes { grid-template-columns: minmax(0, 1fr); } }
+.pers-intro { margin: -8px 0 16px; font-size: 13px; color: var(--texto-2); }
+.pers-intro code { color: var(--acento-2); }
+.pers-fotos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 6px; }
+.pers-foto { position: relative; aspect-ratio: 1; border-radius: var(--radio-s); overflow: hidden; background: var(--panel-2); border: 1px solid var(--borde); }
+.pers-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pers-foto button { position: absolute; top: 3px; right: 3px; width: 22px; height: 22px; border-radius: 50%; border: 0; background: rgba(10,12,16,.8); color: var(--texto); cursor: pointer; font-size: 12px; }
+.pers-foto.anadir { display: grid; place-items: center; cursor: pointer; border-style: dashed; color: var(--texto-2); font-size: 26px; }
+.pers-foto.anadir:hover { color: var(--acento); border-color: var(--acento); }
+.lista-pers { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+.tarjeta-pers { background: var(--panel); border: 1px solid var(--borde); border-radius: var(--radio); padding: 12px; display: grid; gap: 10px; }
+.tarjeta-pers.editando { border-color: var(--acento); }
+.pers-cab { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 10px; align-items: center; }
+.pers-cab img { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; border: 2px solid var(--borde-2); }
+.pers-cab h3 { margin: 0; font-size: 15px; font-family: var(--mono); }
+.pers-cab p { margin: 2px 0 0; font-size: 12px; color: var(--texto-2); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.pers-prueba { position: relative; border-radius: var(--radio-s); overflow: hidden; background: #0a0c10; border: 1px solid var(--borde); min-height: 90px; display: grid; place-items: center; }
+.pers-prueba img { width: 100%; display: block; cursor: zoom-in; }
+.pers-prueba .sin { font-size: 12px; color: var(--texto-3); text-align: center; padding: 14px; }
+.pers-prueba .capa { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 6px; background: rgba(10,12,16,.75); color: var(--acento-2); font-size: 12px; text-align: center; padding: 8px; }
+.pers-poses { display: grid; grid-template-columns: repeat(3, 1fr); font-size: 10px; color: var(--texto-3); text-align: center; text-transform: uppercase; letter-spacing: .5px; }
+.pers-vieja { font-size: 11px; color: var(--aviso); }
+
+/* ---------- ajustes ---------- */
+.ajustes { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; max-width: 1100px; }
+.interruptor { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid var(--borde); }
+.interruptor:first-of-type { border-top: 0; }
+.interruptor small { display: block; color: var(--texto-3); font-size: 12px; }
+.interruptor input { width: 40px; height: 22px; accent-color: var(--acento); flex: none; }
+.dato { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-top: 1px solid var(--borde); font-size: 13px; }
+.dato:first-of-type { border-top: 0; }
+.dato span:first-child { color: var(--texto-2); }
+.dato span:last-child { text-align: right; word-break: break-all; }
+.vram { height: 6px; border-radius: 999px; background: var(--panel-2); overflow: hidden; margin-top: 4px; }
+.vram i { display: block; height: 100%; background: var(--info); }
+
+/* ---------- marca de agua ---------- */
+#aMarcaCtl { padding: 4px 0 10px; }
+.marca-ctl .esquinas { grid-auto-flow: row; grid-template-columns: 1fr 1fr; gap: 3px; }
+.marca-ctl .esquinas button { font-size: 12px; }
+.marca-ctl .segmentado button:disabled { cursor: not-allowed; opacity: .55; }
+.marca-ctl > .nota { margin: -4px 0 0; }
+.marca-ctl input[type=range] { width: 100%; accent-color: var(--acento); }
+
+/* ---------- configuración inicial ---------- */
+.setup { max-width: 880px; margin: 0 auto; }
+.setup h1 { margin: 4px 0 6px; font-size: 24px; }
+.setup > .nota { margin: 0 0 16px; }
+.setup .panel { margin-bottom: 14px; }
+.setup-dev { color: var(--info); }
+.setup .dato .ok { color: var(--ok); }
+.setup .dato .mal { color: var(--aviso); }
+.setup .dato small { color: var(--texto-3); margin-left: 6px; }
+.setup .caja-aviso { margin-top: 12px; padding: 10px 12px; border-radius: var(--radio-s); border: 1px solid #e8c33d66; background: #e8c33d14; color: var(--texto-2); }
+.setup .caja-error { margin-top: 12px; padding: 10px 12px; border-radius: var(--radio-s); border: 1px solid #ef646166; background: #ef646114; color: var(--texto-2); }
+.perfiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.perfil { text-align: left; padding: 12px 14px; border-radius: var(--radio-s); border: 1px solid var(--borde-2); background: var(--panel-2); cursor: pointer; color: var(--texto); }
+.perfil b { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; }
+.perfil b span { color: var(--texto-3); font-weight: 500; }
+.perfil small { display: block; margin-top: 6px; color: var(--texto-2); font-size: 12px; line-height: 1.45; }
+.perfil.activa { border-color: var(--acento); box-shadow: 0 0 0 1px var(--acento) inset; }
+.perfil:disabled { opacity: .4; cursor: not-allowed; }
+.comp { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; padding: 9px 0; border-top: 1px solid var(--borde); font-size: 13px; }
+.comp:first-child { border-top: 0; }
+.comp .estado { color: var(--texto-3); font-size: 12px; text-align: right; white-space: nowrap; }
+.comp .estado.listo { color: var(--ok); }
+.comp .estado.error { color: var(--error); }
+.comp .barra { grid-column: 1 / -1; height: 6px; }
+.setup-total { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; margin: 12px 0 8px; font-size: 13px; color: var(--texto-2); }
+.setup-total b { color: var(--texto); }
+.setup-acciones { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+.setup-listo { font-size: 18px; font-weight: 700; color: var(--ok); margin: 4px 0 8px; }
+.setup-pie { justify-content: flex-end; gap: 10px; margin: 6px 0 30px; }
+
+/* ---------- ayuda ---------- */
+.ayuda { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 28px; max-width: 1100px; align-items: start; }
+.ayuda-indice { position: sticky; top: 72px; }
+.ayuda-indice ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.ayuda-indice button { width: 100%; text-align: left; background: none; border: 0; padding: 6px 10px; border-radius: var(--radio-s); color: var(--texto-2); cursor: pointer; }
+.ayuda-indice button:hover { color: var(--texto); background: var(--panel); }
+.ayuda-cuerpo > .nota { margin: -6px 0 16px; }
+.ayuda-cuerpo .bib-cab { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.ayuda-sec { background: var(--panel); border: 1px solid var(--borde); border-radius: var(--radio); margin-bottom: 10px; scroll-margin-top: 72px; }
+.ayuda-sec > summary { padding: 14px 16px; font-size: 15px; font-weight: 600; cursor: pointer; list-style: none; display: flex; align-items: center; gap: 10px; }
+.ayuda-sec > summary::-webkit-details-marker { display: none; }
+.ayuda-sec > summary::before { content: "›"; color: var(--texto-3); font-size: 18px; line-height: 1; transition: transform .15s; }
+.ayuda-sec[open] > summary::before { transform: rotate(90deg); }
+.ayuda-txt { padding: 0 18px 16px 36px; color: var(--texto-2); line-height: 1.6; max-width: 760px; }
+.ayuda-txt b, .ayuda-txt dt { color: var(--texto); }
+.ayuda-txt p { margin: 0 0 10px; }
+.ayuda-txt ul, .ayuda-txt ol { margin: 0 0 10px; padding-left: 20px; }
+.ayuda-txt li { margin-bottom: 6px; }
+.ayuda-txt code { font: 12px var(--mono); background: var(--panel-2); border: 1px solid var(--borde); border-radius: 4px; padding: 1px 5px; }
+.ayuda-txt dt { font-weight: 600; margin-top: 12px; }
+.ayuda-txt dd { margin: 4px 0 0; }
+.ayuda-aviso { color: var(--aviso); }
+.ayuda-tabla { border-collapse: collapse; width: 100%; margin: 6px 0 12px; font-size: 13px; }
+.ayuda-tabla th, .ayuda-tabla td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--borde); }
+.ayuda-tabla th { color: var(--texto-3); font-weight: 600; font-size: 12px; }
+.ayuda-pasos { list-style: none; padding: 0 !important; counter-reset: paso; }
+.ayuda-paso { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 18px; align-items: start; padding: 14px 0; border-top: 1px solid var(--borde); }
+.ayuda-paso h3 { margin: 0 0 6px; font-size: 14px; color: var(--texto); display: flex; align-items: center; gap: 8px; }
+.ayuda-paso h3::before { counter-increment: paso; content: counter(paso); width: 22px; height: 22px; border-radius: 50%; background: var(--acento); color: var(--acento-txt); display: grid; place-items: center; font-size: 12px; flex: none; }
+.ayuda-paso img { width: 100%; max-height: 380px; object-fit: contain; object-position: top; border-radius: var(--radio-s); border: 1px solid var(--borde); background: var(--bg); cursor: zoom-in; display: block; }
+@media (max-width: 860px) {
+  .ayuda { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .ayuda-indice { position: static; }
+  .ayuda-indice ol { display: flex; flex-wrap: wrap; gap: 4px; }
+  .ayuda-indice button { width: auto; border: 1px solid var(--borde); border-radius: 999px; padding: 5px 10px; font-size: 13px; }
+  .ayuda-paso { grid-template-columns: minmax(0, 1fr); }
+  .ayuda-paso img { max-width: 360px; }
+  .ayuda-txt { padding-left: 18px; }
+}
+
+/* ---------- pie de página ---------- */
+.pie { text-align: center; padding: 18px 20px 26px; font-size: 12px; color: var(--texto-3); }
+.pie a { color: var(--texto-2); text-decoration: none; }
+.pie a:hover { color: var(--acento-2); text-decoration: underline; }
+
+/* ---------- toasts y visor ---------- */
+.toasts { position: fixed; bottom: 16px; right: 16px; left: 16px; display: grid; justify-items: end; gap: 8px; z-index: 50; pointer-events: none; }
+.toast { pointer-events: auto; max-width: 420px; padding: 10px 14px; border-radius: var(--radio-s); background: var(--panel-2); border: 1px solid var(--borde-2); box-shadow: 0 8px 30px rgba(0,0,0,.4); font-size: 13px; animation: entra .2s; }
+.toast.error { border-color: #ef646188; color: #ffb3b1; }
+.toast.ok { border-color: #4cc38a88; }
+.toast .accion { margin-left: 12px; background: none; border: 0; padding: 0; color: var(--acento-2); font-weight: 600; cursor: pointer; }
+@keyframes entra { from { opacity: 0; transform: translateY(8px); } }
+.visor { position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,.88); display: grid; place-items: center; padding: 20px; cursor: zoom-out; }
+.visor img { max-width: 100%; max-height: 100%; border-radius: var(--radio-s); }
+/* ---------- estudio de imágenes ---------- */
+.est-cab { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:20px; }
+.est-cab h1 { margin-bottom:4px; }
+.est-cab p { margin:0; color:var(--texto-2); max-width:720px; }
+.est-etiqueta { color:var(--acento-2); border:1px solid var(--borde-2); border-radius:24px; padding:6px 12px; white-space:nowrap; font-size:12px; }
+.est-layout { display:grid; grid-template-columns:minmax(280px,360px) minmax(0,1fr); gap:20px; align-items:start; }
+.est-form { display:grid; gap:16px; }
+.est-form .campo { margin:0; }
+.est-form textarea { min-height:155px; resize:vertical; }
+.est-par { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.est-foto { display:flex; align-items:center; gap:12px; padding:10px; background:var(--panel-2); border-radius:var(--radio-s); }
+.est-foto img { width:70px; height:70px; object-fit:contain; border-radius:6px; }
+.est-preview { min-height:400px; height:clamp(400px,55vh,660px); display:grid; place-items:center; border:1px solid var(--borde); border-radius:var(--radio); background:radial-gradient(ellipse at top,#27241d 0%,#111319 65%); overflow:hidden; }
+.est-ampliar { border:0; background:transparent; padding:12px; cursor:zoom-in; width:100%; height:100%; min-height:0; display:grid; place-items:center; }
+.est-ampliar img { max-width:100%; max-height:100%; object-fit:contain; border-radius:6px; min-height:0; }
+.est-vacio { padding:32px 20px; text-align:center; color:var(--texto-2); max-width:560px; margin:auto; }
+.est-vacio h2,.est-vacio strong { color:var(--texto); }
+.est-vacio p { white-space:pre-wrap; overflow-wrap:anywhere; }
+.est-vacio progress { width:min(330px,100%); accent-color:var(--acento); height:8px; }
+.est-simbolo { display:block; font-size:48px; color:var(--acento); margin-bottom:16px; }
+.est-detalle { padding:16px 0; }
+.est-detalle p { margin:0 0 8px; overflow-wrap:anywhere; }
+.est-detalle .fila { margin-top:14px; }
+.est-galeria-cab { display:flex; justify-content:space-between; align-items:center; gap:12px; margin:26px 0 12px; }
+.est-galeria-cab h2 { margin:0; }
+.est-galeria { display:grid; grid-template-columns:repeat(auto-fill,minmax(155px,1fr)); gap:12px; }
+.est-galeria > .est-vacio { grid-column:1/-1; }
+.est-mini { text-align:left; cursor:pointer; padding:0 0 10px; overflow:hidden; background:var(--panel); border:1px solid var(--borde); border-radius:var(--radio-s); transition:border-color .15s; min-width:0; }
+.est-mini:hover,.est-mini.seleccionada { border-color:var(--acento); }
+.est-mini.seleccionada { box-shadow:0 0 0 1px var(--acento); }
+.est-mini img,.est-mini-estado { width:100%; height:145px; object-fit:contain; background:#0a0c10; display:flex; align-items:center; justify-content:center; gap:8px; font-size:12px; }
+.est-mini-texto { display:block; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; padding:10px 10px 3px; }
+.est-mini small { padding:0 10px; color:var(--texto-2); }
+.est-paginas { display:flex; align-items:center; justify-content:center; gap:16px; margin-top:16px; }
+@media(max-width:900px) { .est-layout { grid-template-columns:1fr; } .est-cab { align-items:flex-start; } .est-etiqueta { display:none; } .est-preview { height:460px; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="marca"><img src="/logo/logo_dcrypto_studio.svg" alt=""><span>Dcrypto Studio</span></div>
+  <nav>
+    <button data-tab="nuevo" data-i18n="nav.nuevo"></button>
+    <button data-tab="biblioteca" data-i18n="nav.biblioteca"></button>
+    <button data-tab="personajes" data-i18n="nav.personajes"></button>
+    <button data-tab="estudio" data-i18n="est.titulo"></button>
+    <button data-tab="ajustes" data-i18n="nav.ajustes"></button>
+    <button data-tab="ayuda" data-i18n="nav.ayuda"></button>
+  </nav>
+  <div class="cola-global" id="colaGlobal" hidden></div>
+  <label class="idioma-ui" data-i18n-title="ui.idioma"><span aria-hidden="true">🌐</span><select id="selIdioma"></select></label>
+  <button type="button" class="btn-cerrar-app" id="bCerrarApp" data-i18n-title="cerrar.boton"><span aria-hidden="true">⏻</span></button>
+</header>
+<div class="aviso-version" id="avisoVersion" role="status" hidden></div>
+
+<main>
+  <!-- ================= NUEVO VIDEO ================= -->
+  <section id="tab-nuevo" class="estudio" hidden>
+    <!-- 1. Idea -->
+    <div class="panel idea">
+      <h2><span class="n">1</span> <span data-i18n="idea.titulo"></span></h2>
+      <label class="campo"><span data-i18n="idea.tema"></span>
+        <input id="fTema" type="text" data-i18n-ph="idea.tema_ph">
+      </label>
+      <label class="campo" id="campoMaterial"><span data-i18n="idea.material"></span>
+        <textarea id="fMaterial" rows="5" data-i18n-ph="idea.material_ph"></textarea>
+      </label>
+      <label class="campo" id="campoTitulo"><span data-i18n="idea.titulo_video"></span>
+        <input id="fTitulo" type="text" data-i18n-ph="idea.titulo_ph">
+      </label>
+      <div class="campo"><label class="campo" style="margin:0"><span data-i18n="idea.formato"></span></label>
+        <div class="segmentado" id="fFormato">
+          <button data-v="short"><span data-i18n="idea.short"></span><small>9:16 · 45-60 s</small></button>
+          <button data-v="largo"><span data-i18n="idea.largo"></span><small>16:9 · 8-12 min</small></button>
+        </div>
+      </div>
+      <div class="campo idioma-voz" style="margin-top:14px">
+        <label><span class="etq-campo" data-i18n="idea.idioma"></span>
+          <select id="fIdioma"><option value="es" data-i18n="lang.es"></option><option value="en" data-i18n="lang.en"></option></select></label>
+        <label><span class="etq-campo"><span data-i18n="idea.voz"></span> <span class="motor-etq" id="fMotorEtq"></span></span><select id="fVoz"></select></label>
+      </div>
+      <p class="nota aviso-voz" id="fVozAviso" hidden></p>
+      <div class="campo"><label class="campo" style="margin:0"><span data-i18n="idea.estilo"></span></label>
+        <div class="chips" id="fPresets"></div>
+        <textarea id="fEstilo" rows="3"></textarea>
+      </div>
+      <div class="campo"><label class="campo" style="margin:0"><span data-i18n="idea.musica"></span></label>
+        <div class="musica-sel">
+          <select id="fMusica"></select>
+          <button class="btn" id="bPlayPista" data-i18n-title="musica.escuchar">▶</button>
+          <button class="btn" id="bStopPista" data-i18n-title="musica.parar">▢</button>
+        </div>
+        <div id="musicaInfo"></div>
+        <div class="volumen" id="fVolCaja"><span data-i18n="musica.volumen"></span><input id="fVol" type="range" min="0" max="0.4" step="0.01"><span id="fVolTxt"></span></div>
+        <div class="musica-subir">
+          <button class="btn chico" id="bSubir" data-i18n="musica.subir"></button>
+          <span class="nota" data-i18n="musica.a_carpeta"></span>
+          <select id="fMoodSubir"></select>
+          <input type="file" id="fArchivos" accept=".mp3,.wav,.m4a,audio/mpeg,audio/wav,audio/mp4,audio/x-m4a" multiple hidden>
+        </div>
+        <button class="btn" id="bProbar" style="width:100%; margin-top:8px" data-i18n="musica.probar"></button>
+        <div id="pruebaCaja"></div>
+      </div>
+      <label class="campo"><span data-i18n="idea.portada"></span>
+        <select id="fPortada">
+          <option value=""></option>
+          <option value="si" data-i18n="idea.portada_si"></option>
+          <option value="no" data-i18n="comun.No"></option>
+        </select></label>
+      <details class="subs-guion" id="subsGuion">
+        <summary><span data-i18n="subs.de_video"></span> <b id="subsModoTxt"></b></summary>
+        <div class="segmentado" id="fSubsModo" style="margin-bottom:12px">
+          <button data-v="global" data-i18n="subs.btn_global"></button>
+          <button data-v="propio" data-i18n="subs.btn_propio"></button>
+        </div>
+        <div id="subsGuionCtl"></div>
+      </details>
+      <details class="subs-guion" id="marcaGuion">
+        <summary><span data-i18n="marca.de_video"></span> <b id="marcaModoTxt"></b></summary>
+        <p class="nota" id="marcaApagada" hidden data-i18n="marca.apagada"></p>
+        <div class="segmentado" id="fMarcaModo" style="margin-bottom:12px">
+          <button data-v="global" data-i18n="subs.btn_global"></button>
+          <button data-v="ninguna" data-i18n="marca.btn_ninguna"></button>
+          <button data-v="propio" data-i18n="subs.btn_propio"></button>
+        </div>
+        <p class="nota" id="marcaNinguna" hidden data-i18n="marca.nota_ninguna"></p>
+        <div id="marcaGuionCtl"></div>
+      </details>
+      <details class="subs-guion" id="cierreGuion">
+        <summary><span data-i18n="cierre.de_video"></span> <b id="cierreModoTxt"></b></summary>
+        <div class="segmentado" id="fCierreModo" style="margin-bottom:12px">
+          <button data-v="global" data-i18n="subs.btn_global"></button>
+          <button data-v="ninguno" data-i18n="cierre.btn_ninguno"></button>
+          <button data-v="propio" data-i18n="cierre.btn_propio"></button>
+        </div>
+        <p class="nota" id="cierreNota"></p>
+        <img id="cierrePreview" alt="" hidden style="display:block;max-width:160px;max-height:160px;object-fit:contain;margin:0 0 8px">
+        <button type="button" class="btn chico" id="bCierreSubir" hidden data-i18n="cierre.subir"></button>
+        <input type="file" id="fCierre" accept=".png,.jpg,.jpeg,image/png,image/jpeg" hidden>
+      </details>
+      <button class="btn primario grande" id="bEscribir" data-i18n="idea.escribir"></button>
+      <p class="nota" data-i18n="idea.proveedor_ayuda"></p>
+      <div class="reescribir" id="reescribirCaja" hidden>
+        <input id="fNota" type="text" data-i18n-ph="idea.nota_ph">
+        <button class="btn primario" id="bReescribir" data-i18n="idea.reescribir"></button>
+      </div>
+      <button class="btn" id="bTraducir" style="width:100%; margin-top:8px" hidden></button>
+      <p class="nota" id="sinIA" hidden data-i18n-html="idea.sin_ia_html"></p>
+      <div class="fila" style="margin-top:8px; justify-content:space-between">
+        <button class="btn" id="bPegar" data-i18n="idea.pegar"></button>
+        <button class="btn fantasma chico" id="bBlanco" data-i18n="idea.blanco"></button>
+        <button class="btn fantasma chico" id="bNuevo" hidden data-i18n="idea.otro"></button>
+      </div>
+      <p class="slug" id="fSlug"></p>
+    </div>
+
+    <!-- 2. Guion -->
+    <div class="panel guion">
+      <h2><span class="n">2</span> <span data-i18n="col.guion"></span> <span class="estado-guardado" id="estadoGuardado" style="margin-left:auto"></span></h2>
+      <div id="guionCuerpo"></div>
+    </div>
+
+    <!-- 3. Vista previa -->
+    <div class="panel vista">
+      <h2><span class="n">3</span> <span data-i18n="col.vista"></span></h2>
+      <div id="vistaCuerpo"></div>
+    </div>
+  </section>
+
+  <!-- ================= BIBLIOTECA ================= -->
+  <section id="tab-biblioteca" hidden>
+    <div class="bib-cab">
+      <h1 data-i18n="nav.biblioteca"></h1>
+      <div class="chips" id="bibFiltros" style="margin:0"></div>
+    </div>
+    <div class="rejilla" id="bibRejilla"></div>
+  </section>
+
+  <!-- ================= PERSONAJES ================= -->
+  <section id="tab-personajes" hidden>
+    <div class="bib-cab"><h1 data-i18n="nav.personajes"></h1></div>
+    <p class="pers-intro"><span data-i18n-html="pers.intro_html"></span> <span id="persSoloAlta"></span></p>
+    <div class="personajes">
+      <div class="panel" id="persForm">
+        <h2 id="persFormTitulo"></h2>
+        <label class="campo"><span data-i18n="pers.modalidad"></span>
+          <select id="pModalidad"><option value="foto" data-i18n="pers.modalidad_foto"></option><option value="completo" data-i18n="pers.modalidad_completo"></option></select>
+          <span class="nota" id="pModalidadNota"></span></label>
+        <label class="campo"><span data-i18n="pers.nombre"></span>
+          <input id="pNombre" type="text" data-i18n-ph="pers.nombre_ph" autocomplete="off" spellcheck="false" maxlength="32">
+          <span class="nota" data-i18n="pers.nombre_d"></span></label>
+        <div class="campo"><span class="etq-campo" data-i18n="pers.fotos"></span>
+          <div class="pers-fotos" id="pFotos"></div>
+          <input type="file" id="pArchivos" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" multiple hidden>
+          <span class="nota" data-i18n="pers.fotos_d"></span></div>
+        <label class="campo"><span data-i18n="pers.descripcion"></span>
+          <textarea id="pDesc" rows="3" data-i18n-ph="pers.descripcion_ph"></textarea>
+          <span class="nota" data-i18n="pers.descripcion_d"></span></label>
+        <label class="campo"><span><span data-i18n="pers.fuerza"></span>: <b id="pFuerzaTxt"></b></span>
+          <input id="pFuerza" type="range" min="0.4" max="0.9" step="0.05" style="width:100%; accent-color:var(--acento)">
+          <span class="nota" data-i18n="pers.fuerza_d"></span></label>
+        <div class="fila">
+          <button class="btn primario" id="pGuardar"></button>
+          <button class="btn fantasma" id="pCancelar" data-i18n="comun.cancelar" hidden></button>
+        </div>
+      </div>
+      <div class="lista-pers" id="persLista"></div>
+    </div>
+  </section>
+
+  <section id="tab-estudio" hidden>
+    <div class="est-cab"><div><h1 data-i18n="est.titulo"></h1><p data-i18n="est.intro"></p></div><span class="est-etiqueta" data-i18n="est.local"></span></div>
+    <div id="estError" class="error-box" role="alert" hidden></div>
+    <div class="est-layout">
+      <form id="estForm" class="panel est-form">
+        <h2 data-i18n="est.crear"></h2>
+        <label class="campo"><span data-i18n="est.prompt"></span><textarea id="estPrompt" maxlength="2000" required rows="5" data-i18n-ph="est.prompt_ph"></textarea><span class="nota" data-i18n="est.prompt_nota"></span><span class="prompt-largo" id="estPromptLargo" role="status" hidden></span></label>
+        <div class="est-par">
+          <label class="campo"><span data-i18n="est.formato"></span><select id="estFormato"><option value="9:16">9:16</option><option value="16:9">16:9</option><option value="1:1" selected>1:1</option><option value="4:5">4:5</option></select></label>
+          <label class="campo"><span data-i18n="est.calidad"></span><select id="estCalidad"><option value="rapida" data-i18n="est.rapida"></option><option value="alta" data-i18n="est.alta"></option></select></label>
+        </div>
+        <div class="campo"><span class="etq-campo" data-i18n="est.foto"></span><input id="estArchivo" type="file" accept="image/jpeg,image/png,image/webp" hidden><button type="button" id="estSubir" class="btn" data-i18n="est.elegir_foto"></button><p class="nota" data-i18n="est.foto_nota"></p></div>
+        <div class="est-foto" id="estFotoCaja" hidden><img id="estFotoPreview" alt="" data-i18n-title="est.referencia"><button id="estQuitarFoto" type="button" class="btn chico fantasma" data-i18n="est.quitar_foto"></button></div>
+        <label class="campo" id="estIntensidadCampo" hidden><span><span data-i18n="est.intensidad"></span>: <b id="estIntensidadValor">50%</b></span><input id="estIntensidad" type="range" min="0.25" max="1" step="0.25" value="0.5" style="width:100%;accent-color:var(--acento)"><span class="nota" id="estIntensidadNota"></span></label>
+        <p class="nota" data-i18n="est.modelo_nota"></p>
+        <button type="submit" class="btn primario" id="estGenerar" data-i18n="est.generar"></button>
+      </form>
+      <div>
+        <div id="estPreview" class="est-preview" aria-live="polite"></div>
+        <div id="estDetalle" class="est-detalle" hidden><p id="estPromptDetalle"></p><p class="nota" id="estMetaDetalle"></p><div class="fila"><button type="button" class="btn" id="estPNG" data-i18n="est.png"></button><button type="button" class="btn" id="estJPG" data-i18n="est.jpg"></button><button type="button" class="btn fantasma" id="estEliminar" style="margin-left:auto" data-i18n="est.eliminar"></button></div></div>
+      </div>
+    </div>
+    <div class="est-galeria-cab"><div><h2 data-i18n="est.galeria"></h2><span class="nota" id="estCantidad"></span></div><button type="button" id="estActualizar" class="btn chico" data-i18n="est.actualizar"></button></div>
+    <div id="estGaleria" class="est-galeria"></div>
+    <div class="est-paginas"><button type="button" id="estAnterior" class="btn chico" data-i18n="est.anterior"></button><span class="nota" id="estPagina"></span><button type="button" id="estSiguiente" class="btn chico" data-i18n="est.siguiente"></button></div>
+  </section>
+
+  <!-- ================= AJUSTES ================= -->
+  <section id="tab-ajustes" hidden>
+    <div class="ajustes">
+      <div class="panel">
+        <h2 data-i18n="aj.defecto"></h2>
+        <label class="campo"><span data-i18n="aj.motor"></span>
+          <select id="aMotor"><option value="edge" data-i18n="aj.motor_edge"></option><option value="kokoro" data-i18n="aj.motor_kokoro"></option></select></label>
+        <p class="nota" id="aMotorNota"></p>
+        <label class="campo"><span data-i18n="aj.voz_es"></span><select id="aVoz"></select></label>
+        <label class="campo"><span data-i18n="idea.formato"></span>
+          <select id="aFormato"><option value="short" data-i18n="aj.short"></option><option value="largo" data-i18n="aj.largo"></option></select></label>
+        <label class="campo"><span data-i18n="idea.estilo"></span><textarea id="aEstilo" rows="3"></textarea></label>
+        <label class="campo"><span data-i18n="aj.cierre_es"></span><input id="aCierreEs" type="text" maxlength="150" data-i18n-ph="aj.cierre_ph_es"></label>
+        <label class="campo"><span data-i18n="aj.cierre_en"></span><input id="aCierreEn" type="text" maxlength="150" data-i18n-ph="aj.cierre_ph_en"></label>
+        <p class="nota" style="margin-top:-6px" data-i18n="aj.cierre_d"></p>
+        <button class="btn primario" data-guardar-ajustes data-i18n="aj.guardar"></button>
+      </div>
+      <div class="panel">
+        <h2 data-i18n="aj.produccion"></h2>
+        <label class="campo"><span data-i18n="aj.rate"></span><input id="aRate" type="text"></label>
+        <label class="campo"><span data-i18n="aj.calidad"></span>
+          <select id="aCalidad">
+            <option value="rapida" data-i18n="aj.rapida"></option>
+            <option value="alta" data-i18n="aj.alta"></option>
+          </select></label>
+        <label class="interruptor"><div><span data-i18n="aj.subs"></span><small data-i18n="aj.subs_d"></small></div><input id="aSubs" type="checkbox"></label>
+        <label class="interruptor"><div><span data-i18n="aj.marca"></span><small data-i18n="aj.marca_d"></small></div><input id="aMarca" type="checkbox"></label>
+        <label class="btn" for="aLogo" data-i18n="marca.subir"></label>
+        <input id="aLogo" type="file" accept="image/png,image/webp" hidden>
+        <p class="nota" data-i18n="marca.sin_logo"></p>
+        <img id="aLogoPreview" alt="" hidden style="max-width:160px;max-height:100px;object-fit:contain">
+        <div id="aMarcaCtl"></div>
+        <label class="interruptor"><div><span data-i18n="aj.portada"></span><small data-i18n="aj.portada_d"></small></div><input id="aPortada" type="checkbox"></label>
+        <label class="interruptor"><div><span data-i18n="aj.cierre_tarjeta"></span><small data-i18n="aj.cierre_tarjeta_d"></small></div><input id="aCierreTarjeta" type="checkbox"></label>
+        <label class="campo" id="aCierreNombreCampo"><span data-i18n="aj.cierre_nombre"></span><input id="aCierreNombre" type="text" maxlength="60" data-i18n-ph="aj.cierre_nombre_ph"></label>
+        <label class="interruptor"><div><span data-i18n="aj.demo"></span><small data-i18n="aj.demo_d"></small></div><input id="aDemo" type="checkbox"></label>
+        <button class="btn primario" id="bGuardarAjustes" style="margin-top:12px" data-i18n="aj.guardar"></button>
+      </div>
+      <div class="panel">
+        <h2 data-i18n="aj.ia"></h2>
+        <label class="campo"><span data-i18n="aj.ia_proveedor"></span>
+          <select id="aIA">
+            <option value="claude_code">Claude Code</option>
+            <option value="anthropic" data-i18n="aj.ia_anthropic"></option>
+            <option value="openai" data-i18n="aj.ia_openai"></option>
+            <option value="ninguno" data-i18n="aj.ia_ninguno"></option>
+          </select></label>
+        <p class="nota" id="aIAClaudeEstado" data-ia="claude_code"></p>
+        <div data-ia="anthropic">
+          <label class="campo"><span data-i18n="aj.ia_clave"></span>
+            <input id="aAnthKey" type="password" autocomplete="off" spellcheck="false">
+            <span class="clave-estado"><span data-clave-estado="anthropic"></span><button class="btn fantasma chico" data-quitar-clave="anthropic" data-i18n="aj.ia_quitar"></button></span></label>
+          <label class="campo"><span data-i18n="aj.ia_modelo"></span><input id="aAnthModelo" type="text" spellcheck="false"></label>
+        </div>
+        <div data-ia="openai">
+          <label class="campo"><span data-i18n="aj.ia_clave"></span>
+            <input id="aOpenaiKey" type="password" autocomplete="off" spellcheck="false">
+            <span class="clave-estado"><span data-clave-estado="openai"></span><button class="btn fantasma chico" data-quitar-clave="openai" data-i18n="aj.ia_quitar"></button></span></label>
+          <label class="campo"><span data-i18n="aj.ia_modelo"></span><input id="aOpenaiModelo" type="text" spellcheck="false"></label>
+        </div>
+        <p class="nota" data-ia="ninguno" data-i18n="aj.ia_ninguno_d"></p>
+        <p class="nota" data-i18n="aj.ia_d"></p>
+        <button class="btn primario" data-guardar-ajustes data-i18n="aj.guardar"></button>
+      </div>
+      <div class="panel ancho">
+        <h2 data-i18n="aj.subs_global"></h2>
+        <p class="nota" style="margin-top:-6px" data-i18n="aj.subs_global_d"></p>
+        <div id="aSubs2"></div>
+      </div>
+      <div class="panel">
+        <h2 data-i18n="aj.apoyar"></h2>
+        <p class="nota" style="margin-top:-6px" data-i18n="aj.apoyar_d"></p>
+        <button class="btn fantasma" id="bApoyar" style="margin-top:10px" data-i18n="aj.apoyar_btn"></button>
+      </div>
+      <div class="panel">
+        <h2 data-i18n="aj.setup"></h2>
+        <p class="nota" style="margin-top:-6px" data-i18n="aj.setup_d"></p>
+        <div class="nota" id="aSetupResumen"></div>
+        <button class="btn" id="bAbrirSetup" style="margin-top:10px" data-i18n="aj.setup_abrir"></button>
+      </div>
+      <div class="panel">
+        <h2 data-i18n="aj.equipo"></h2>
+        <div id="sistema"></div>
+        <button class="btn" id="bLiberar" style="margin-top:12px" data-i18n="aj.liberar"></button>
+        <p class="nota" data-i18n="aj.liberar_d"></p>
+        <button class="btn" id="bCerrarAppAj" style="margin-top:12px" data-i18n="cerrar.boton"></button>
+        <p class="nota" data-i18n="cerrar.boton_d"></p>
+      </div>
+      <div class="panel">
+        <h2 data-i18n="aj.espacio"></h2>
+        <div id="espacio"><span class="nota" data-i18n="aj.midiendo"></span></div>
+        <button class="btn" id="bLimpiar" style="margin-top:12px" disabled data-i18n="aj.limpiar"></button>
+        <p class="nota" data-i18n-html="aj.limpiar_html"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= AYUDA ================= -->
+  <section id="tab-ayuda" hidden>
+    <div class="ayuda">
+      <aside class="ayuda-indice">
+        <span class="etq-campo" data-i18n="ayuda.indice"></span>
+        <ol id="ayudaIndice"></ol>
+      </aside>
+      <div class="ayuda-cuerpo">
+        <div class="bib-cab"><h1 data-i18n="ayuda.titulo"></h1>
+          <button class="btn fantasma chico" id="bAyudaTodo"></button></div>
+        <p class="nota" data-i18n="ayuda.intro"></p>
+        <div id="ayudaSecciones"></div>
+      </div>
+    </div>
+  </section>
+  <!-- ================= CONFIGURACIÓN INICIAL (app/preparar.py) ================= -->
+  <section id="tab-setup" hidden>
+    <div class="setup">
+      <h1 data-i18n="setup.titulo"></h1>
+      <p class="nota" data-i18n="setup.intro"></p>
+      <p class="nota setup-dev" id="setupDev" hidden data-i18n="setup.dev"></p>
+      <div class="panel"><h2 data-i18n="setup.equipo"></h2><div id="setupEquipo"></div></div>
+      <div class="panel"><h2 data-i18n="setup.que"></h2><div class="perfiles" id="setupPerfiles"></div></div>
+      <div class="panel"><h2 data-i18n="setup.descargas"></h2><div id="setupDescargas"></div></div>
+      <div class="panel"><h2 data-i18n="setup.verif"></h2><p class="nota" style="margin-top:-6px" data-i18n="setup.verif_d"></p><div id="setupVerif"></div></div>
+      <div class="fila setup-pie">
+        <button class="btn primario" data-setup="empezar" id="bSetupEmpezar" data-i18n="setup.empezar"></button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="pie" id="pie" data-version="{{VERSION}}"></footer>
+
+<dialog class="modal" id="dlgPegar">
+  <form method="dialog" id="formPegar">
+    <h3 data-i18n="pegar.titulo"></h3>
+    <p class="nota" style="margin:0" data-i18n-html="pegar.nota_html"></p>
+    <textarea id="fPegar" spellcheck="false" data-i18n-ph="pegar.ph"></textarea>
+    <ul class="errores" id="pegarErrores" hidden></ul>
+    <div class="fila" style="justify-content:flex-end">
+      <button class="btn" value="cancelar" formnovalidate data-i18n="comun.cancelar"></button>
+      <button class="btn primario" id="bPegarOk" value="ok" data-i18n="pegar.cargar"></button>
+    </div>
+  </form>
+</dialog>
+
+<!-- sin IA integrada: escribir el guion con la IA del usuario (copiar prompt -> Pegar guion) -->
+<dialog class="modal" id="dlgPrompt">
+  <form method="dialog">
+    <h3 data-i18n="esc.manual.titulo"></h3>
+    <p class="nota" style="margin:0" data-i18n-html="esc.manual.nota_html"></p>
+    <textarea id="promptTexto" readonly spellcheck="false"></textarea>
+    <p class="nota" style="margin:0" data-i18n-html="esc.manual.pasos_html"></p>
+    <div class="fila" style="justify-content:flex-end">
+      <button class="btn" value="cancelar" data-i18n="comun.cancelar"></button>
+      <button type="button" class="btn" id="bPromptCopiar" data-i18n="esc.manual.copiar"></button>
+      <button type="button" class="btn primario" id="bPromptPegar" data-i18n="esc.manual.pegar"></button>
+    </div>
+  </form>
+</dialog>
+
+<!-- sin IA integrada: traducir fuera (copiar como texto -> pegar traducción) -->
+<dialog class="modal" id="dlgTraducir">
+  <form method="dialog" id="formTraducir">
+    <h3 data-i18n="tr.manual.titulo"></h3>
+    <span class="etq-campo" data-i18n="tr.manual.paso1"></span>
+    <textarea id="trOrigen" class="medio" readonly spellcheck="false"></textarea>
+    <div class="fila"><button type="button" class="btn" id="bTrCopiar" data-i18n="tr.manual.copiar"></button></div>
+    <p class="nota" style="margin:0" data-i18n-html="tr.manual.instrucciones_html"></p>
+    <span class="etq-campo" data-i18n="tr.manual.paso2"></span>
+    <textarea id="trPegar" class="medio" spellcheck="false" data-i18n-ph="tr.manual.ph"></textarea>
+    <ul class="errores" id="trErrores" hidden></ul>
+    <div class="fila" style="justify-content:flex-end">
+      <button class="btn" value="cancelar" formnovalidate data-i18n="comun.cancelar"></button>
+      <button class="btn primario" id="bTrOk" value="ok" data-i18n="tr.manual.crear"></button>
+    </div>
+  </form>
+</dialog>
+
+<input type="file" id="fPropio" accept=".jpg,.jpeg,.png,.mp4,.mov,image/jpeg,image/png,video/mp4,video/quicktime" hidden>
+<div class="toasts" id="toasts"></div>
+
+<script>
+"use strict";
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const palabras = t => (t || "").trim().split(/\s+/).filter(Boolean).length;
+const mmss = s => s == null ? "—" : `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`;
+const hace = ts => {
+  const d = (Date.now() / 1000 - ts);
+  if (d < 60) return T("comun.ahora");
+  if (d < 3600) return T("comun.hace_min", { n: Math.round(d / 60) });
+  if (d < 86400) return T("comun.hace_h", { n: Math.round(d / 3600) });
+  return new Date(ts * 1000).toLocaleDateString(LANG, { day: "numeric", month: "short", year: "numeric" });
+};
+
+const PRESETS = [
+  ["preset.cine", "cinematic, dramatic lighting, 35mm film grain, muted teal and amber palette, photorealistic, high detail"],
+  ["preset.archivo", "archival documentary photograph, 1970s to 1990s film stock, natural light, faded colors, grain, photorealistic"],
+  ["preset.noir", "film noir, high contrast black and white, deep shadows, volumetric light, fog, mysterious, photorealistic"],
+  ["preset.inquietante", "dark atmospheric horror, desaturated cold tones, eerie mist, low key lighting, unsettling, photorealistic"],
+  ["preset.cosmico", "epic sci-fi concept art, cosmic scale, glowing particles, deep blues and purples, volumetric light, highly detailed"],
+  ["preset.ilustracion", "digital painting, graphic novel illustration, bold shapes, dramatic chiaroscuro, rich colors"],
+];
+const RECOMENDADAS = {
+  edge: {
+    es: ["es-CO-GonzaloNeural", "es-MX-JorgeNeural", "es-CO-SalomeNeural", "es-MX-DaliaNeural"],
+    en: ["en-US-AndrewNeural", "en-US-GuyNeural", "en-US-BrianNeural", "en-US-AriaNeural", "en-US-JennyNeural", "en-GB-RyanNeural"],
+  },
+  kokoro: { es: ["em_alex", "ef_dora"], en: ["am_michael", "af_heart", "am_fenrir", "af_bella", "bm_george", "bf_emma"] },
+};
+// en español, la de Ajustes (una por motor); en inglés, esta
+const VOZ_DEFECTO = { edge: { en: "en-US-AndrewNeural" }, kokoro: { en: "am_michael" } };
+const motorDe = v => /^[a-z]{2}_[a-z]+$/.test(v || "") ? "kokoro" : "edge";
+/** El motor de voz de un guion (o borrador): el suyo; si no tiene, el de su voz. */
+const motorGuion = d => d.motor_voz || (d.voz ? motorDe(d.voz) : S.ajustes.motor_voz || "edge");
+function vozDefecto(motor, idioma) {
+  if (idioma === "es") return motor === "kokoro" ? S.ajustes.voz_kokoro : S.ajustes.voz;
+  return VOZ_DEFECTO[motor][idioma];
+}
+/** "am_michael" -> "Michael"; "es-CO-GonzaloNeural" -> "es-CO-Gonzalo" */
+const nombreVoz = id => motorDe(id) === "kokoro" ? id.slice(3).replace(/^./, c => c.toUpperCase()) : id.replace("Neural", "");
+const estadoTxt = k => (["idea", "guion", "generando", "listo", "error"].includes(k) ? T(`estado.${k}`) : k);
+
+// ---------------- estado ----------------
+const S = {
+  ajustes: null, voces: [], musica: { moods: [], sueltas: [] }, moodSubir: null,
+  slug: null, det: null, doc: null, mtime: null,   // guion abierto (det = respuesta completa del servidor)
+  borrador: null,                                   // idea sin guardar todavía (sin slug)
+  sucio: false, tGuardar: null, cadena: Promise.resolve(),
+  foco: {},                                         // valor de un campo al enfocarlo, para saber si cambió
+  escritura: null,                                  // {id, inicio, slug}: guion que Claude está escribiendo
+  traduccion: null,                                 // {id, origen}: traducción al inglés en curso
+  filtro: "todos", audio: null, tPoll: null,
+};
+
+/** Cabeceras de toda petición: X-Idioma hace que el servidor responda sus mensajes en el idioma de la interfaz. */
+const cabeceras = (extra = {}) => ({ "X-Idioma": LANG, "X-Dcrypto-Local": "1", ...extra });
+const errorHttp = (data, status) => data?.detail || T("comun.error_http", { status });
+
+async function api(metodo, ruta, cuerpo) {
+  const r = await fetch(ruta, {
+    method: metodo, headers: cabeceras(cuerpo ? { "Content-Type": "application/json" } : {}),
+    body: cuerpo ? JSON.stringify(cuerpo) : undefined,
+  });
+  const data = await r.json().catch(() => null);
+  if (!r.ok && r.status !== 409) throw Object.assign(new Error(errorHttp(data, r.status)), { status: r.status });
+  return { status: r.status, data };
+}
+
+function toast(msg, tipo = "", accion) {
+  // accion = { texto, fn, ms }: un botón dentro del aviso (p. ej. "Deshacer"), que dura ms
+  const t = document.createElement("div");
+  t.className = `toast ${tipo}`;
+  t.setAttribute("role", tipo === "error" ? "alert" : "status");
+  t.setAttribute("aria-atomic", "true");
+  t.textContent = msg;
+  if (accion) {
+    const b = document.createElement("button");
+    b.className = "accion"; b.textContent = accion.texto;
+    b.onclick = () => { t.remove(); accion.fn(); };
+    t.append(b);
+  }
+  $("#toasts").append(t);
+  setTimeout(() => t.remove(), accion?.ms || (tipo === "error" ? 7000 : 3500));
+}
+
+// Una sola decisión pendiente: un doble clic no debe duplicar operaciones.
+let dialogoPendiente = false;
+function elegirAccion(mensaje, { aceptar = T("dlg.continuar"), alternativa = null } = {}) {
+  if (dialogoPendiente) return Promise.resolve(null);
+  dialogoPendiente = true;
+  const origen = document.activeElement;
+  return new Promise(resolve => {
+    const dlg = document.createElement("dialog");
+    dlg.className = "modal confirmacion";
+    dlg.setAttribute("role", "alertdialog");
+    dlg.setAttribute("aria-modal", "true");
+    dlg.setAttribute("aria-labelledby", "confirmacionTitulo");
+    dlg.setAttribute("aria-describedby", "confirmacionMensaje");
+    dlg.innerHTML = `<div class="confirmacion-cab"><span class="confirmacion-icono" aria-hidden="true">!</span><h3 id="confirmacionTitulo">${esc(T("dlg.titulo"))}</h3></div>
+      <p id="confirmacionMensaje"></p><div class="confirmacion-botones">
+      <button type="button" class="btn fantasma" data-decision="cancelar" autofocus>${esc(T("comun.cancelar"))}</button>
+      ${alternativa ? `<button type="button" class="btn" data-decision="alternativa">${esc(alternativa)}</button>` : ""}
+      <button type="button" class="btn primario" data-decision="aceptar">${esc(aceptar)}</button></div>`;
+    $("#confirmacionMensaje", dlg).textContent = mensaje;
+    dlg.addEventListener("click", e => {
+      const b = e.target.closest("[data-decision]");
+      if (b) dlg.close(b.dataset.decision);
+    });
+    dlg.addEventListener("cancel", e => { e.preventDefault(); dlg.close("cancelar"); });
+    dlg.addEventListener("keydown", e => {
+      if (e.key !== "Tab") return;
+      const botones = $$("button:not([disabled])", dlg), primero = botones[0], ultimo = botones.at(-1);
+      if (e.shiftKey && document.activeElement === primero) { e.preventDefault(); ultimo.focus(); }
+      else if (!e.shiftKey && document.activeElement === ultimo) { e.preventDefault(); primero.focus(); }
+    });
+    const terminar = () => {
+      const decision = ["aceptar", "alternativa"].includes(dlg.returnValue) ? dlg.returnValue : null;
+      dlg.remove();
+      dialogoPendiente = false;
+      if (origen?.isConnected && !origen.disabled) origen.focus({ preventScroll:true });
+      else {
+        const padre = $$("dialog[open]").at(-1) || $("main > section:not([hidden])") || document;
+        $$("textarea, input:not([disabled]), button:not([disabled]), a[href]", padre)
+          .find(el => el.getClientRects().length && !el.closest("[hidden]"))?.focus({ preventScroll:true });
+      }
+      resolve(decision);
+    };
+    dlg.addEventListener("close", terminar, { once:true });
+    document.body.append(dlg);
+    try { dlg.showModal(); $("[data-decision='cancelar']", dlg).focus(); }
+    catch { terminar(); }
+  });
+}
+async function confirmarAccion(mensaje, aceptar) {
+  return await elegirAccion(mensaje, { aceptar }) === "aceptar";
+}
+
+// ---------------- navegación ----------------
+function ruta() {
+  const [, tab = "nuevo", slug] = location.hash.match(/^#\/?([^/]*)\/?(.*)$/) || [];
+  return { tab: tab || "nuevo", slug: decodeURIComponent(slug || "") || null };
+}
+function ir(tab, slug) { location.hash = slug ? `#/${tab}/${encodeURIComponent(slug)}` : `#/${tab}`; }
+
+async function alNavegar() {
+  const { tab, slug } = ruta();
+  if (tab === "licencia") return ir("nuevo");  // enlaces de la 1.0.0: la versión gratuita no tiene esa pestaña
+  $$("nav button").forEach(b => b.classList.toggle("activa", b.dataset.tab === tab));
+  $$("main > section").forEach(s => s.hidden = s.id !== `tab-${tab}`);
+  if (tab === "nuevo") {
+    if (slug && slug !== S.slug) await abrir(slug);
+    else if (!slug && S.slug) nuevo();
+  }
+  if (tab === "biblioteca") cargarBiblioteca();
+  if (tab === "personajes") { renderFormPersonaje(); cargarPersonajes(); }
+  if (tab === "estudio") { renderEstudio(); cargarEstudio(true); }
+  if (tab === "ajustes") renderAjustes();
+  if (tab === "ayuda") renderAyuda();
+  if (tab === "setup") cargarSetup(true);
+  programarPoll(0);
+}
+
+// ---------------- ayuda ----------------
+// Textos en i18n.js ("ayuda.<id>" y "ayuda.<id>_html"); las capturas, en app/static/help/ (servidas en /help).
+const AYUDA_SECCIONES = ["inicio", "guion", "imagenes", "clips", "personajes", "estudio", "voz", "musica", "subtitulos", "publicar", "ajustes", "sinia", "errores", "requisitos"];
+const AYUDA_CAPTURAS = ["1-tema", "2-escenas", "3-musica", "4-generar", "5-descargar"];
+
+/** Las secciones a mostrar: "feedback" solo si app/config.py tiene FEEDBACK_URL (llega en /api/ajustes). */
+const seccionesAyuda = () => S.ajustes?.feedback_url ? [...AYUDA_SECCIONES, "feedback"] : AYUDA_SECCIONES;
+
+function renderAyuda() {
+  const cont = $("#ayudaSecciones");
+  const secciones = seccionesAyuda();
+  const feedback = `<p><a class="btn primario" href="${esc(S.ajustes?.feedback_url)}" target="_blank" rel="noopener">${esc(T("ayuda.feedback_btn"))}</a></p>
+    <p>${esc(T("ayuda.feedback_txt"))}</p>`;
+  // al rehacerla (cambio de idioma) se conservan las secciones abiertas; la primera vez, solo Primeros pasos
+  const abiertas = cont.children.length ? new Set($$("details[open]", cont).map(d => d.dataset.sec)) : new Set(["inicio"]);
+  const pasos = `<ol class="ayuda-pasos">${AYUDA_CAPTURAS.map((img, i) => `
+    <li class="ayuda-paso"><div><h3>${esc(T(`ayuda.paso${i + 1}`))}</h3>${T(`ayuda.paso${i + 1}_html`)}</div>
+      <img src="/help/${img}.webp" alt="${esc(T(`ayuda.paso${i + 1}`))}" loading="lazy"></li>`).join("")}</ol>`;
+  cont.innerHTML = secciones.map(id => `
+    <details class="ayuda-sec" id="ayuda-${id}" data-sec="${id}" ${abiertas.has(id) ? "open" : ""}>
+      <summary>${esc(T(`ayuda.${id}`))}</summary>
+      <div class="ayuda-txt">${id === "feedback" ? feedback : T(`ayuda.${id}_html`)}${id === "inicio" ? pasos : ""}</div>
+    </details>`).join("");
+  $("#ayudaIndice").innerHTML = secciones.map(id => `<li><button data-ir="${id}">${esc(T(`ayuda.${id}`))}</button></li>`).join("");
+  botonAyudaTodo();
+}
+
+function botonAyudaTodo() {
+  const todas = $$("#ayudaSecciones details").every(d => d.open);
+  $("#bAyudaTodo").textContent = T(todas ? "ayuda.cerrar_todo" : "ayuda.abrir_todo");
+}
+
+// ---------------- columna 1: Idea ----------------
+function datosIdea() { return S.doc || S.borrador; }
+
+/** Guion nuevo en blanco. 'conservar' (voz, motor, idioma, estilo, música) sale del video anterior en
+ * "Crear otro video"; si no, todo sale de Ajustes. */
+function nuevo(conservar = null) {
+  S.slug = S.det = S.doc = S.mtime = null;
+  const a = S.ajustes;
+  S.borrador = { tema: "", material: "", titulo: "", formato: a.formato, idioma: "es", motor_voz: a.motor_voz, voz: vozDefecto(a.motor_voz, "es"),
+    estilo_visual: a.estilo_visual, musica: "", volumen_musica: 0.15, ...(conservar || {}) };
+  renderTodo();
+}
+
+/** "Crear otro video": formulario limpio con la voz, el estilo y la música del que acaba de terminar. */
+function otroVideo() {
+  const d = S.doc || {};
+  const conservar = {};
+  for (const k of ["idioma", "voz", "motor_voz", "estilo_visual", "musica", "volumen_musica"])
+    if (d[k] != null && d[k] !== "") conservar[k] = d[k];
+  conservar.motor_voz = motorGuion(d);
+  nuevo(conservar);
+  ir("nuevo");
+  $("#fTema").focus();
+}
+
+function llenarVoces(sel, actual, idioma = "es", motor = "edge") {
+  const voces = S.voces.filter(v => (v.motor || "edge") === motor && (v.locale === idioma || v.locale.startsWith(idioma + "-")));
+  const ids = new Set(voces.map(v => v.id));
+  const rec = RECOMENDADAS[motor][idioma].filter(v => ids.has(v) || !voces.length);
+  const porLocale = {};
+  voces.forEach(v => (porLocale[v.locale] ??= []).push(v));
+  let html = `<optgroup label="${T("voces.recomendadas")}">${rec.map(v => `<option value="${v}">${esc(nombreVoz(v))}</option>`).join("")}</optgroup>`;
+  for (const [loc, vs] of Object.entries(porLocale).sort())
+    html += `<optgroup label="${esc(loc)}">${vs.map(v => `<option value="${esc(v.id)}">${esc(nombreVoz(v.id))}${v.genero ? ` · ${T(v.genero === "Female" ? "voces.mujer" : "voces.hombre")}` : ""}</option>`).join("")}</optgroup>`;
+  if (actual && !ids.has(actual) && !rec.includes(actual)) html += `<option value="${esc(actual)}">${esc(actual)}</option>`;
+  sel.innerHTML = html;
+  sel.value = actual;
+}
+
+function renderIdea() {
+  const d = datosIdea();
+  $("#fTema").value = d.tema || "";
+  $("#fMaterial").value = d.material || "";
+  $("#fTitulo").value = d.titulo || "";
+  $("#campoTitulo").hidden = !S.slug;  // en un guion nuevo el título lo pone Claude o el JSON pegado
+  $$("#fFormato button").forEach(b => b.classList.toggle("activa", b.dataset.v === (d.formato || "short")));
+  $("#fIdioma").value = d.idioma || "es";
+  const motor = motorGuion(d);
+  llenarVoces($("#fVoz"), d.voz, d.idioma || "es", motor);
+  $("#fMotorEtq").textContent = `· ${T(motor === "kokoro" ? "motor.kokoro" : "motor.edge")}`;
+  const av = S.slug && S.det?.aviso_voz;
+  $("#fVozAviso").hidden = !av;
+  $("#fVozAviso").textContent = av || "";
+  $("#fEstilo").value = d.estilo_visual || "";
+  $("#fPresets").innerHTML = PRESETS.map(([n, v]) =>
+    `<button class="chip ${v === d.estilo_visual ? "activa" : ""}" data-v="${esc(v)}">${T(n)}</button>`).join("");
+  renderMusica();
+  $("#fPortada").value = d.portada == null ? "" : d.portada ? "si" : "no";
+  $("#fPortada").options[0].textContent = T("idea.portada_segun", { valor: T(S.ajustes.portada ? "comun.si" : "comun.no") });
+  if (SUBS) { renderSubsGuion(); renderMarcaGuion(); }
+  renderCierreGuion();
+  const conEscenas = !!(S.slug && S.doc?.escenas?.length);
+  $("#bEscribir").hidden = conEscenas;
+  $("#reescribirCaja").hidden = !conEscenas;
+  $("#bBlanco").hidden = !!S.slug;
+  $("#bNuevo").hidden = !S.slug;
+  $("#bTraducir").hidden = !conEscenas || (d.idioma || "es") === "en";
+  if (!S.traduccion) $("#bTraducir").textContent = T("idea.traducir");
+  $("#fSlug").textContent = S.slug ? `guiones/${S.slug}.json` : "";
+  botonesEscritura();
+}
+
+// ---------------- música ----------------
+const MOODS = { tension: "mood.tension", misterio: "mood.misterio", epico: "mood.epico", triste: "mood.triste", neutro: "mood.neutro" };  // id -> clave de texto
+const todasLasPistas = () => [...S.musica.moods.flatMap(m => m.pistas), ...S.musica.sueltas];
+/** mood de un valor de "musica": el propio mood, o la carpeta de una ruta assets/musica/<mood>/... */
+function moodDe(valor) {
+  if (MOODS[valor]) return valor;
+  const m = (valor || "").match(/^assets\/musica\/([^/]+)\//);
+  return m && MOODS[m[1]] ? m[1] : null;
+}
+
+function renderMusica() {
+  const d = datosIdea(), cat = S.musica, sel = $("#fMusica");
+  let html = `<option value="">${T("musica.sin")}</option><optgroup label="${T("musica.por_mood")}">`
+    + cat.moods.map(m => `<option value="${m.id}">${T(MOODS[m.id])} · ${m.pistas.length ? Tn("musica.pistas", m.pistas.length) : T("musica.vacia")}</option>`).join("")
+    + `</optgroup>`;
+  for (const m of cat.moods.filter(m => m.pistas.length))
+    html += `<optgroup label="${esc(T("musica.fija", { mood: T(MOODS[m.id]) }))}">${m.pistas.map(p => `<option value="${esc(p.ruta)}">${esc(p.nombre)}</option>`).join("")}</optgroup>`;
+  if (cat.sueltas.length)
+    html += `<optgroup label="${T("musica.otras")}">${cat.sueltas.map(p => `<option value="${esc(p.ruta)}">${esc(p.nombre)}</option>`).join("")}</optgroup>`;
+  if (d.musica && !MOODS[d.musica] && !todasLasPistas().some(p => p.ruta === d.musica))
+    html += `<option value="${esc(d.musica)}">${esc(T("musica.no_encontrada", { valor: d.musica }))}</option>`;
+  sel.innerHTML = html;
+  sel.value = d.musica || "";
+  const ms = $("#fMoodSubir");
+  ms.innerHTML = Object.entries(MOODS).map(([k, v]) => `<option value="${k}">${T(v)}</option>`).join("");
+  ms.value = moodDe(d.musica) || S.moodSubir || "tension";
+  $("#fVolCaja").hidden = !d.musica;
+  $("#fVol").value = d.volumen_musica ?? 0.15;
+  $("#fVolTxt").textContent = `${Math.round((d.volumen_musica ?? 0.15) * 100)}%`;
+  renderMusicaInfo();
+}
+
+/** La pista que va a sonar: para un mood la elige el servidor por slug (determinista). */
+function pistaActual() {
+  const v = datosIdea()?.musica;
+  if (!v) return null;
+  if (MOODS[v]) {
+    const m = S.det?.musica;
+    if (S.slug && m?.valor === v) return m.pista ? { url: m.pista, nombre: m.nombre } : null;
+    const p = S.musica.moods.find(x => x.id === v)?.pistas[0];  // aún sin guardar: una de muestra
+    return p ? { url: p.url, nombre: p.nombre } : null;
+  }
+  const p = todasLasPistas().find(x => x.ruta === v);
+  return p ? { url: p.url, nombre: p.nombre } : null;
+}
+
+function renderMusicaInfo() {
+  const v = datosIdea()?.musica, p = pistaActual();
+  let info = "";
+  if (MOODS[v] && !S.musica.moods.find(m => m.id === v)?.pistas.length)
+    info = `<span class="aviso">${T("musica.carpeta_vacia_html", { mood: T(MOODS[v]) })}</span>`;
+  else if (p) info = `${T(MOODS[v] ? "musica.pista_guion" : "musica.pista")}: <b>${esc(p.nombre)}</b>`;
+  else if (v) info = `<span class="aviso">${esc(T("musica.no_encuentro", { valor: v }))}</span>`;
+  $("#musicaInfo").innerHTML = info;
+  $("#bPlayPista").disabled = !p;
+  $("#bStopPista").disabled = !p;
+
+  const tp = [...(S.det?.trabajos || [])].reverse().find(t => t.tipo === "prueba");
+  const activa = tp && (tp.estado === "en cola" || tp.estado === "corriendo");
+  $("#bProbar").disabled = !S.slug || activa;
+  $("#bProbar").title = S.slug ? "" : T("musica.primero_guion");
+  const caja = $("#pruebaCaja"), pr = S.slug ? S.det?.prueba : null;
+  const estado = activa ? `<span class="fila"><span class="giro"></span> ${T(tp.estado === "en cola" ? "musica.prueba_cola" : "musica.prueba_generando")}</span>`
+    : tp?.estado === "error" ? `<div class="error-box">${esc(tp.error)}</div>` : "";
+  const clave = `${pr?.url || ""}|${estado}`;
+  if (caja.dataset.clave !== clave) {  // no recrear el <video> en cada sondeo: cortaría la reproducción
+    caja.dataset.clave = clave;
+    caja.innerHTML = estado + (pr ? `<video src="${esc(pr.url)}#t=0.1" controls playsinline preload="metadata"></video>` : "");
+  }
+}
+
+function tocarPista() {
+  const p = pistaActual();
+  if (!p) return;
+  S.audio?.pause();
+  S.audio = new Audio(p.url);
+  S.audioSrc = p.url;
+  S.audio.play().catch(() => toast(T("musica.no_suena"), "error"));
+}
+function pararAudio() { S.audio?.pause(); }
+
+async function subirMusica(archivos) {
+  if (!archivos.length) return;
+  const mood = $("#fMoodSubir").value;
+  const fd = new FormData();
+  fd.append("mood", mood);
+  for (const f of archivos) fd.append("archivos", f);
+  const b = $("#bSubir");
+  b.disabled = true; b.innerHTML = `<span class="giro"></span> ${T("musica.subiendo")}`;
+  try {
+    const r = await fetch("/api/musica/subir", { method: "POST", body: fd, headers: cabeceras() });
+    const data = await r.json().catch(() => null);
+    if (!r.ok) throw new Error(errorHttp(data, r.status));
+    S.musica = { moods: data.moods, sueltas: data.sueltas };
+    S.moodSubir = mood;
+    if (!datosIdea().musica) cambiarIdea("musica", mood);
+    renderMusica();
+    toast(Tn("musica.subidas", data.guardadas.length, { mood: T(MOODS[mood]) }), "ok");
+    data.errores.forEach(e => toast(e, "error"));
+  } catch (e) { toast(e.message, "error"); }
+  finally { b.disabled = false; b.textContent = T("musica.subir"); $("#fArchivos").value = ""; }
+}
+
+function cambiarIdea(campo, valor) {
+  const d = datosIdea();
+  d[campo] = valor;
+  if (S.slug) guardarLuego();
+  if (campo === "formato") renderGuion();
+}
+
+// ---------------- escribir con Claude Code ----------------
+/** Parámetros fijos de la columna Idea que viajan con el guion. */
+function parametrosIdea() {
+  const d = datosIdea();
+  const p = {};
+  for (const k of ["tema", "material", "formato", "idioma", "voz", "motor_voz", "estilo_visual", "musica", "volumen_musica", "portada", "subtitulos", "marca"])
+    if (d[k] !== undefined && d[k] !== "") p[k] = d[k];
+  return p;
+}
+
+function botonesEscritura() {
+  const ocupado = !!S.escritura || !!S.traduccion, ia = !!S.ajustes?.ia?.disponible;
+  for (const id of ["#bPegar", "#bBlanco"]) $(id).disabled = ocupado;
+  // sin proveedor de IA siguen activos: abren "Escribir el guion con tu IA" / "Traducir sin IA integrada"
+  for (const id of ["#bEscribir", "#bReescribir", "#bTraducir"]) {
+    $(id).disabled = ocupado;
+    $(id).title = ia ? "" : T("idea.sin_ia");
+  }
+  $("#sinIA").hidden = ia;
+}
+
+async function escribirGuion(reescribir) {
+  const p = parametrosIdea();
+  if (!(p.tema || "").trim() && !(p.material || "").trim()) { toast(T("esc.falta_tema"), "error"); $("#fTema").focus(); return; }
+  if (!S.ajustes?.ia?.disponible) {
+    if (reescribir) await guardar();
+    return abrirPromptManual({ ...p, ...(reescribir ? { slug: S.slug, nota: $("#fNota").value.trim() } : {}) });
+  }
+  if (reescribir) {
+    if (!await confirmarAccion(T("esc.confirmar_reescribir", { titulo: S.doc.titulo || S.slug }), T("dlg.reescribir"))) return;
+    await guardar();
+  }
+  try {
+    const cuerpo = { ...p, ...(reescribir ? { slug: S.slug, nota: $("#fNota").value.trim() } : {}) };
+    const { data } = await api("POST", "/api/escribir", cuerpo);
+    S.escritura = { id: data.id, inicio: Date.now(), slug: reescribir ? S.slug : null, log: [] };
+    botonesEscritura();
+    renderGuion();
+    sondearEscritura();
+  } catch (e) { toast(e.message, "error"); }
+}
+
+async function sondearEscritura() {
+  const w = S.escritura;
+  if (!w) return;
+  let t;
+  try { t = (await api("GET", `/api/trabajos/${w.id}`)).data; }
+  catch (e) { S.escritura = null; botonesEscritura(); renderGuion(); toast(e.message, "error"); return; }
+  if (S.escritura !== w) return;  // cancelado mientras tanto
+  w.log = t.log;
+  if (t.estado === "corriendo") {
+    renderEscribiendo();
+    setTimeout(sondearEscritura, 1500);
+    return;
+  }
+  S.escritura = null;
+  botonesEscritura();
+  if (t.estado === "listo" && t.resultado?.slug) {
+    $("#fNota").value = "";
+    await abrirEscrito(t.resultado.slug, t.resultado.avisos);
+  } else if (t.estado === "listo" && t.resultado?.existe) {
+    await resolverExistente(t.resultado);
+  } else if (t.estado === "error" && t.resultado?.crudo) {
+    renderGuion();
+    abrirPegar(t.resultado.crudo, [t.error, T("esc.arreglalo")]);
+  } else if (t.estado === "error") {
+    renderGuion();
+    toast(t.error, "error");
+  } else {
+    renderGuion();  // cancelado
+  }
+}
+
+async function cancelarEscritura() {
+  const w = S.escritura;
+  if (!w) return;
+  S.escritura = null;
+  botonesEscritura();
+  renderGuion();
+  try { await api("POST", `/api/trabajos/${w.id}/cancelar`); toast(T("esc.cancelada")); } catch { /* ya había terminado */ }
+}
+
+async function abrirEscrito(slug, avisos) {
+  const { data } = await api("GET", `/api/guiones/${encodeURIComponent(slug)}`);
+  S.borrador = null;
+  cargarDetalle(data, true);
+  history.replaceState(null, "", `#/nuevo/${encodeURIComponent(slug)}`);
+  toast(Tn("esc.listo", data.doc.escenas.length), "ok");
+  (avisos || []).forEach(a => toast(T("comun.revisa", { aviso: a })));
+}
+
+/** Un guion nuevo cuyo slug ya existe: nunca se pisa sin preguntar. */
+async function resolverExistente(r) {
+  const cuerpo = { guion: r.guion, base: r.base || parametrosIdea() };
+  const decision = await elegirAccion(T("esc.existe", { titulo: r.titulo || r.existe, slug: r.existe }), { aceptar:T("dlg.reemplazar"), alternativa:T("dlg.copia") });
+  if (!decision) return;
+  if (decision === "aceptar") cuerpo.reemplazar = true;
+  else cuerpo.copia = true;
+  const res = await fetch("/api/guiones/importar", { method: "POST", headers: cabeceras({ "Content-Type": "application/json" }), body: JSON.stringify(cuerpo) });
+  const data = await res.json();
+  if (!res.ok) { toast((data.errores || [data.detail]).join(" · "), "error"); return; }
+  await abrirEscrito(data.slug, data.avisos);
+}
+
+function renderEscribiendo() {
+  const w = S.escritura, cont = $("#guionCuerpo");
+  if (!w) return;
+  const seg = Math.round((Date.now() - w.inicio) / 1000);
+  if (!$(".escribiendo", cont)) {
+    cont.innerHTML = `<div class="escribiendo">
+      <span class="giro"></span>
+      <h4>${T(w.slug ? "esc.reescribiendo" : "esc.escribiendo")}</h4>
+      <div class="reloj" id="escReloj"></div>
+      <ul id="escLog"></ul>
+      <button class="btn" id="bCancelarEsc">${T("comun.cancelar")}</button></div>`;
+  }
+  $("#escReloj").textContent = mmss(seg);
+  $("#escLog").innerHTML = (w.log || []).map(l => `<li>· ${esc(l)}</li>`).join("");
+}
+
+// ---------------- traducir ----------------
+async function traducir(reemplazar = false) {
+  if (!S.ajustes?.ia?.disponible) return abrirTraduccionManual();
+  await guardar();
+  const origen = S.slug;
+  let r;
+  try { r = await api("POST", `/api/guiones/${encodeURIComponent(origen)}/traducir`, reemplazar ? { reemplazar: true } : {}); }
+  catch (e) { toast(e.message, "error"); return; }
+  if (r.status === 409) {
+    if (!r.data.existe) { toast(r.data.detail || T("tr.no_ahora"), "error"); return; }
+    if (await confirmarAccion(T("tr.existe", { titulo: r.data.titulo || r.data.existe, slug: r.data.existe }), T("dlg.reemplazar")))
+      return traducir(true);
+    return;
+  }
+  S.traduccion = { id: r.data.id, origen };
+  const b = $("#bTraducir");
+  b.innerHTML = `<span class="giro"></span> ${T("tr.traduciendo")}`;
+  botonesEscritura();
+  sondearTraduccion();
+}
+
+async function sondearTraduccion() {
+  const w = S.traduccion;
+  if (!w) return;
+  let t;
+  try { t = (await api("GET", `/api/trabajos/${w.id}`)).data; }
+  catch (e) { t = { estado: "error", error: e.message }; }
+  if (t.estado === "corriendo") { setTimeout(sondearTraduccion, 1500); return; }
+  S.traduccion = null;
+  $("#bTraducir").textContent = T("idea.traducir");
+  botonesEscritura();
+  if (t.estado === "listo" && t.resultado?.slug) {
+    toast(T("tr.lista"), "ok");
+    (t.resultado.avisos || []).forEach(a => toast(T("comun.revisa", { aviso: a })));
+    ir("nuevo", t.resultado.slug);
+  } else if (t.estado === "error") toast(t.error, "error");
+}
+
+// ---------------- sin IA integrada ----------------
+/** Copia el contenido de un textarea. Por http desde otro equipo de la red no hay navigator.clipboard:
+ *  entonces se selecciona y se usa execCommand; si tampoco, queda seleccionado para Ctrl+C. */
+async function copiarDe(ta, ok) {
+  let copiado = false;
+  try { await navigator.clipboard.writeText(ta.value); copiado = true; }
+  catch {
+    ta.focus(); ta.select();
+    try { copiado = document.execCommand("copy"); } catch { /* sin portapapeles */ }
+  }
+  toast(copiado ? ok : T("copiar.fallo"), copiado ? "ok" : "error");
+}
+
+/** "Generar guion con IA" / "Reescribir" sin proveedor: el prompt de app/escribir.py para copiarlo a otra IA. */
+async function abrirPromptManual(cuerpo) {
+  try {
+    const { data } = await api("POST", "/api/escribir/prompt", cuerpo);
+    $("#promptTexto").value = data.prompt;
+    $("#dlgPrompt").showModal();
+    $("#promptTexto").scrollTop = 0;
+  } catch (e) { toast(e.message, "error"); }
+}
+
+/** El guion como texto para traducir fuera: etiquetas en inglés (el idioma de destino, así no las cambian),
+ *  una escena por línea, numeradas. El servidor lo lee con app/escribir.py: leer_traduccion_manual(). */
+function textoParaTraducir(d) {
+  const una = t => (t || "").replace(/\s+/g, " ").trim();
+  return [`Title: ${una(d.titulo)}`, `Thumbnail title: ${una(d.titulo_miniatura)}`, "",
+    ...(d.escenas || []).map((e, i) => `${i + 1}. ${una(e.texto)}`)].join("\n");
+}
+
+async function abrirTraduccionManual() {
+  await guardar();
+  if (!S.doc?.escenas?.length || !S.doc.escenas.every(e => (e.texto || "").trim())) {
+    toast(T("srv.traducir_textos"), "error"); return;
+  }
+  $("#trOrigen").value = textoParaTraducir(S.doc);
+  $("#trOrigen").scrollTop = 0;
+  $("#trPegar").value = "";
+  mostrarErroresTr([]);
+  $("#dlgTraducir").showModal();
+  $("#bTrCopiar").focus();
+}
+
+function mostrarErroresTr(errores) {
+  const ul = $("#trErrores");
+  ul.innerHTML = errores.map(e => `<li>${esc(e)}</li>`).join("");
+  ul.hidden = !errores.length;
+}
+
+async function enviarTraduccion(reemplazar = false) {
+  const origen = S.slug, b = $("#bTrOk");
+  b.disabled = true;
+  try {
+    const res = await fetch(`/api/guiones/${encodeURIComponent(origen)}/traducir/manual`, {
+      method: "POST", headers: cabeceras({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ texto: $("#trPegar").value, ...(reemplazar ? { reemplazar: true } : {}) }),
+    });
+    const data = await res.json().catch(() => null);
+    if (res.status === 409 && data?.existe) {
+      if (await confirmarAccion(T("tr.existe", { titulo: data.titulo || data.existe, slug: data.existe }), T("dlg.reemplazar"))) return enviarTraduccion(true);
+      return;
+    }
+    if (!res.ok) {
+      // qué escenas del original faltan, con su texto, para encontrarlas rápido en la traducción
+      const faltan = (data?.faltan || []).map(n => T("tr.manual.falta_escena",
+        { n, texto: recorte(S.doc.escenas[n - 1]?.texto || "", 80) }));
+      mostrarErroresTr([...(data?.errores || [errorHttp(data, res.status)]), ...faltan]);
+      return;
+    }
+    $("#dlgTraducir").close();
+    toast(T("tr.lista"), "ok");
+    (data.avisos || []).forEach(a => toast(T("comun.revisa", { aviso: a })));
+    ir("nuevo", data.slug);
+  } catch (e) { mostrarErroresTr([e.message]); }
+  finally { b.disabled = false; }
+}
+
+const recorte = (t, n) => t.length > n ? `${t.slice(0, n - 1).trimEnd()}…` : t;
+
+// ---------------- pegar guion ----------------
+function abrirPegar(texto = "", errores = []) {
+  $("#fPegar").value = texto;
+  mostrarErroresPegar(errores);
+  $("#dlgPegar").showModal();
+  $("#fPegar").focus();
+}
+
+function mostrarErroresPegar(errores) {
+  const ul = $("#pegarErrores");
+  ul.innerHTML = errores.map(e => `<li>${esc(e)}</li>`).join("");
+  ul.hidden = !errores.length;
+}
+
+async function enviarPegado(extra = {}) {
+  const b = $("#bPegarOk");
+  b.disabled = true;
+  try {
+    const res = await fetch("/api/guiones/importar", {
+      method: "POST", headers: cabeceras({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ texto: $("#fPegar").value, base: parametrosIdea(), ...extra }),
+    });
+    const data = await res.json();
+    if (res.status === 409) {
+      const decision = await elegirAccion(T("esc.existe", { titulo: data.titulo || data.existe, slug: data.existe }), { aceptar:T("dlg.reemplazar"), alternativa:T("dlg.copia") });
+      if (!decision) return;
+      if (decision === "aceptar")
+        return enviarPegado({ reemplazar: true });
+      return enviarPegado({ copia: true });
+    }
+    if (!res.ok) { mostrarErroresPegar(data.errores || [errorHttp(data, res.status)]); return; }
+    $("#dlgPegar").close();
+    await abrirEscrito(data.slug, data.avisos);
+  } catch (e) { mostrarErroresPegar([e.message]); }
+  finally { b.disabled = false; }
+}
+
+async function empezarEnBlanco() {
+  const d = { ...S.borrador, escenas: [{ texto: "", prompt: "" }] };
+  if (!d.titulo.trim()) d.titulo = d.tema.trim() || T("guion.sin_titulo");
+  try {
+    const { data } = await api("POST", "/api/guiones", d);
+    S.borrador = null;
+    cargarDetalle(data, true);
+    history.replaceState(null, "", `#/nuevo/${encodeURIComponent(data.slug)}`);
+    $(".escena textarea.texto")?.focus();
+  } catch (e) { toast(e.message, "error"); }
+}
+
+// ---------------- guion abierto ----------------
+async function abrir(slug) {
+  try {
+    const { data } = await api("GET", `/api/guiones/${encodeURIComponent(slug)}`);
+    cargarDetalle(data, true);
+  } catch (e) { toast(e.message, "error"); ir("nuevo"); }
+}
+
+function cargarDetalle(d, completo) {
+  S.det = d; S.slug = d.slug; S.mtime = d.mtime;
+  if (completo) {
+    S.doc = structuredClone(d.doc);
+    S.doc.escenas ??= [];
+    renderTodo();
+  } else {
+    actualizarEstados();
+  }
+}
+
+function guardarLuego() {
+  S.sucio = true;
+  $("#estadoGuardado").textContent = T("guion.editando");
+  clearTimeout(S.tGuardar);
+  S.tGuardar = setTimeout(guardar, 800);
+}
+
+function guardar() {
+  clearTimeout(S.tGuardar);
+  S.cadena = S.cadena.then(async () => {
+    if (!S.sucio || !S.slug) return;
+    S.sucio = false;
+    $("#estadoGuardado").textContent = T("guion.guardando");
+    const { status, data } = await api("PUT", `/api/guiones/${S.slug}`, { doc: S.doc, mtime: S.mtime });
+    if (status === 409) {
+      toast(T("guion.conflicto"), "error");
+      cargarDetalle(data, true);
+    } else {
+      cargarDetalle(data, false);
+    }
+    $("#estadoGuardado").textContent = T("guion.guardado");
+  }).catch(e => { S.sucio = true; $("#estadoGuardado").textContent = T("guion.sin_guardar"); toast(e.message, "error"); });
+  return S.cadena;
+}
+
+async function generar(tipo, escena) {
+  await guardar();
+  try {
+    const { data } = await api("POST", `/api/guiones/${S.slug}/generar`, { tipo, escena });
+    cargarDetalle(data, false);
+    programarPoll(0);
+  } catch (e) { toast(e.message, "error"); }
+}
+
+// ---------------- columna 2: Guion ----------------
+function trabajosActivos() { return (S.det?.trabajos || []).filter(t => t.estado === "en cola" || t.estado === "corriendo"); }
+
+/** Qué está haciendo el worker con la escena i (1-based): {voz, img} = "en cola" | "corriendo" | null */
+function ocupado(i) {
+  const r = { voz: null, img: null };
+  for (const t of trabajosActivos()) {
+    if (t.tipo === "voz" && t.escena === i) r.voz = t.estado;
+    if (t.tipo === "imagen" && t.escena === i) r.img = t.estado;
+    if (t.tipo === "video") {
+      const p = id => t.pasos.find(x => x.id === id)?.estado;
+      if (t.estado === "en cola") { r.voz ??= "en cola"; r.img ??= "en cola"; }
+      if (p(`voz-${i}`) === "corriendo") r.voz = "corriendo";
+      if (p(`img-${i}`) === "corriendo") r.img = "corriendo";
+    }
+  }
+  return r;
+}
+
+function renderGuion() {
+  const cont = $("#guionCuerpo");
+  if (S.escritura) { renderEscribiendo(); return; }
+  if (!S.slug) {
+    cont.innerHTML = `<div class="vacio-guion"><h4>${T("guion.empieza")}</h4><p>${T("guion.empieza_html")}</p></div>`;
+    $("#estadoGuardado").textContent = "";
+    return;
+  }
+  const d = S.doc, esc_ = d.escenas;
+  if (!esc_.length) {
+    cont.innerHTML = `<div class="vacio-guion"><h4>${esc(d.titulo || d.tema || S.slug)}</h4>
+      <p>${T("guion.sin_escenas")}</p>
+      <p class="nota">${T("guion.sin_escenas_html")}</p>
+      <button class="btn anadir" data-accion="anadir" data-i="-1" style="max-width:260px">${T("guion.anadir")}</button></div>`;
+    return;
+  }
+  const vertical = d.formato !== "largo";
+  cont.innerHTML = `
+    <div class="guion-cab"><div><h3 id="gTitulo"></h3><div class="metricas" id="gMetricas"></div></div></div>
+    <ul class="avisos" id="gAvisos"></ul>
+    <div class="escenas">${esc_.map((e, i) => `
+      <div class="escena ${vertical ? "vertical" : "horizontal"}" data-i="${i}">
+        <div class="mini" data-mini></div>
+        <div class="esc-cuerpo">
+          <div class="esc-cab">
+            <span class="esc-num">${i + 1}</span>
+            <span class="esc-meta" data-meta></span>
+            <div class="esc-acc">
+              <button class="btn fantasma" data-accion="voz" title="${T("escena.escuchar")}">▶</button>
+              <button class="btn fantasma" data-accion="imagen" data-falta-imagen hidden>${T("escena.generar_ia")}</button>
+              <details class="menu-img"><summary class="btn fantasma" title="${T("escena.imagen")}">↻</summary><div>
+                <button data-accion="imagen" data-generada>${T("escena.regenerar")}<small data-qajuste></small></button>
+                <button data-accion="imagen-alta" data-generada>${T("escena.regenerar_alta")}<small>${T("escena.regenerar_alta_d")}</small></button>
+                <button data-accion="quitar-propio" data-propia>${T("escena.quitar_propio")}<small>${T("escena.quitar_propio_d")}</small></button>
+              </div></details>
+              <button class="btn fantasma" data-accion="propio" title="${T("escena.subir_propio")}">${T("escena.subir_imagen")}</button>
+              <button class="btn fantasma" data-accion="propio-video" title="${T('clip.limites')}">${T("clip.subir")}</button>
+              <a class="btn fantasma" data-descargar-imagen download hidden>${T("escena.descargar_imagen")}</a>
+              <button class="btn fantasma" data-accion="subir" title="${T("escena.subir")}" ${i === 0 ? "disabled" : ""}>↑</button>
+              <button class="btn fantasma" data-accion="bajar" title="${T("escena.bajar")}" ${i === esc_.length - 1 ? "disabled" : ""}>↓</button>
+              <button class="btn fantasma" data-accion="anadir" title="${T("escena.anadir")}">＋</button>
+              <button class="btn fantasma peligro" data-accion="borrar" title="${T("escena.borrar")}">✕</button>
+            </div>
+          </div>
+          <textarea class="texto" data-campo="texto" rows="2" placeholder="${T("escena.texto_ph")}">${esc(e.texto)}</textarea>
+          <div class="etq-fila"><span class="etq">${T("escena.etq_imagen")}</span><span class="sugerido" data-sugerido ${e.prompt_sugerido ? "" : "hidden"}>${T("escena.prompt_sugerido")}</span></div>
+          <textarea class="prompt" data-campo="prompt" rows="2" placeholder="${e.media ? T("escena.prompt_ph_propio") : "empty street at dusk, lone figure walking away, fog"}">${esc(e.prompt)}</textarea>
+          <p class="prompt-largo" data-prompt-largo hidden></p>
+          <p class="nota" data-subida-propia role="status" hidden><span class="giro"></span> ${T('clip.validando_estado')}</p>
+          <div class="clip-opciones" data-clip-opciones hidden>
+            <span class="nota" data-clip-duracion></span>
+            <label>${T("clip.inicio")} <input type="number" data-inicio-clip min="0" step="0.001" value="${e.inicio_clip || 0}"> s</label>
+            <button class="btn chico" data-accion="ver-video">${T("clip.preview")}</button>
+            <button class="btn chico fantasma" data-accion="quitar-video">${T("clip.quitar")}</button>
+            <p class="nota" data-clip-aviso></p>
+          </div>
+          <label class="pausa-caja" title="${T("escena.pausa_d")}">${T("escena.pausa")}
+            <input type="number" data-pausa min="0" max="10" step="0.1" value="${e.pausa || 0}"> s</label>
+        </div>
+      </div>`).join("")}
+    </div>
+    <button class="btn anadir" data-accion="anadir" data-i="${esc_.length - 1}">${T("guion.anadir")}</button>`;
+  $$("#guionCuerpo textarea").forEach(autoAlto);
+  actualizarEstados();
+}
+
+function autoAlto(ta) { ta.style.height = "auto"; ta.style.height = ta.scrollHeight + 2 + "px"; }
+
+function avisoGuionCorto(total, formato, dur) {
+  if (total <= 0 || dur >= (formato === "largo" ? 480 : 45)) return null;
+  return T("guion.av_corto", { dur: mmss(dur), recomendacion: T(formato === "largo" ? "guion.recomendacion_largo" : "guion.recomendacion_short") });
+}
+
+/** Refresca miniaturas, duraciones, métricas y la vista previa sin tocar los textarea (no se pierde el foco). */
+function actualizarEstados() {
+  if (!S.slug) return;
+  const d = S.doc, est = S.det?.escenas || [];
+  const t = $("#gTitulo");
+  if (t) t.textContent = d.titulo || d.tema || S.slug;
+
+  let total = 0, dur = 0, conocida = true;
+  $$("#guionCuerpo .escena").forEach(card => {
+    const i = +card.dataset.i, e = d.escenas[i], s = est[i] || {};
+    $('[data-subida-propia]', card).hidden = !(S.subiendoPropio && S.propioObjetivo?.escena === e);
+    const n = palabras(e.texto);
+    total += n;
+    if (s.duracion != null) dur += s.duracion; else { conocida = false; dur += n / 2.4; }
+    const o = ocupado(i + 1);
+    const mini = $("[data-mini]", card);
+    const bajando = o.img === "corriendo" && S.descarga;
+    const capa = o.img ? `<div class="capa"><span class="giro"></span>${bajando ? T("mini.descargando_html", { gb: S.descarga.gb.toFixed(1), total: S.descarga.total })
+      : o.img === "corriendo" ? T(s.calidad === "alta" ? "mini.generando_alta_html" : "mini.generando") : T("mini.en_cola")}</div>` : "";
+    // etiqueta de calidad: ALTA si la imagen lo es; gris si la que se ve no es la que se usará al producir
+    const q = s.media ? `<span class="q propia" title="${esc(s.media.nombre)}">${T(s.media.falta ? "mini.falta_archivo" : s.media.tipo === "clip" ? "mini.clip_propio" : "mini.imagen_propia")}</span>`
+      : s.img && (s.calidad_img === "alta" || s.calidad_img !== s.calidad)
+      ? `<span class="q ${s.calidad_img !== s.calidad ? "otra" : ""}" title="${s.calidad_img !== s.calidad ? T("mini.al_producir", { calidad: T(s.calidad === "alta" ? "cal.alta" : "cal.rapida") }) : T("mini.alta_d")}">${T(s.calidad_img === "alta" ? "mini.ALTA" : "mini.RAPIDA")}</span>` : "";
+    const src = s.img || "";
+    const descarga = $("[data-descargar-imagen]", card);
+    const original = !s.media?.falta && s.media?.tipo !== "clip" ? s.media?.url || src : "";
+    descarga.hidden = !original;
+    if (original) descarga.href = original; else descarga.removeAttribute("href");
+    if (mini.dataset.src !== src || mini.dataset.capa !== capa || mini.dataset.q !== q || mini.dataset.prompt !== e.prompt) {
+      mini.dataset.prompt = e.prompt;
+      mini.dataset.src = src; mini.dataset.capa = capa; mini.dataset.q = q;
+      mini.innerHTML = (src ? `<img src="${esc(src)}" alt="" loading="lazy" ${s.media?.tipo === "clip" ? `data-clip="${esc(s.media.url || "")}"` : ""}>`
+        : s.media?.falta ? `<div class="vacio falta"><span>${esc(s.media.nombre)}</span><button class="btn primario" data-accion="${s.media.tipo === "clip" ? "propio-video" : "propio"}">${T("escena.volver_subir")}</button></div>`
+        : `<div class="vacio">${T(e.prompt ? "mini.sin_imagen" : "mini.falta_prompt")}</div>`) + q + capa;
+    }
+    const vozTxt = o.voz ? `<span class="voz-pend">${T(o.voz === "corriendo" ? "escena.voz_generando" : "escena.voz_cola")}</span>`
+      : s.duracion != null ? `${s.duracion.toFixed(1)} s` : (e.texto ? `<span class="voz-pend">${T("escena.sin_voz", { s: (n / 2.4).toFixed(0) })}</span>` : "");
+    $("[data-meta]", card).innerHTML = `<span class="${n > 40 ? "largo" : ""}">${T("escena.palabras", { n })}</span>${vozTxt ? `<span>${vozTxt}</span>` : ""}`;
+    $('[data-accion="voz"]', card).disabled = !s.voz;
+    const menu = $(".menu-img", card);
+    menu.hidden = !src && !e.media;
+    const generarFaltante = $("[data-falta-imagen]", card);
+    generarFaltante.hidden = false;
+    generarFaltante.disabled = !e.prompt?.trim() || !!o.img || !!S.subiendoPropio;
+    generarFaltante.title = !e.prompt?.trim() ? T("mini.falta_prompt") : "";
+    const sinMenu = (!e.prompt && !e.media) || !!o.img;
+    menu.classList.toggle("deshab", sinMenu);
+    if (sinMenu) menu.open = false;
+    $$("[data-generada]", menu).forEach(b => b.hidden = !!e.media);
+    $("[data-propia]", menu).hidden = !e.media;
+    $("[data-propia]", menu).innerHTML = s.media?.tipo === 'clip'
+      ? `${T('clip.quitar')}<small>${T('clip.sin_ia')}</small>`
+      : `${T('escena.quitar_propio')}<small>${T('escena.quitar_propio_d')}</small>`;
+    $("summary", menu).title = T(e.media ? "escena.archivo_propio" : s.img ? "escena.otra_version" : "escena.generar_imagen");
+    $('[data-accion="propio"]', card).title = T(e.media ? "escena.cambiar_propio" : "escena.subir_propio");
+    $('[data-accion="propio"]', card).textContent = T("escena.subir_imagen");
+    const videoBtn = $('[data-accion="propio-video"]', card);
+    videoBtn.textContent = T(s.media?.tipo === "clip" ? "clip.reemplazar" : "clip.subir");
+    $('[data-accion="propio"]', card).disabled = videoBtn.disabled = !!S.subiendoPropio || !!o.img;
+    const clipCaja = $('[data-clip-opciones]', card), esClip = s.media?.tipo === "clip";
+    clipCaja.hidden = !esClip;
+    if (esClip) {
+      const tiempo = s.media.duracion;
+      $('[data-clip-duracion]', card).textContent = Number.isFinite(tiempo) ? T('clip.duracion', { s:tiempo.toFixed(2) }) : T('clip.sin_duracion');
+      $('[data-clip-aviso]', card).textContent = s.media.error || T('clip.ajuste');
+      const inicio = $('[data-inicio-clip]', card);
+      if (document.activeElement !== inicio) inicio.value = e.inicio_clip || 0;
+      if (Number.isFinite(tiempo)) inicio.max = Math.max(0, tiempo - .001).toFixed(3); else inicio.removeAttribute('max');
+      inicio.disabled = !!s.media.falta || !!s.media.error || !!o.img || !!S.subiendoPropio;
+      $('[data-accion="ver-video"]', card).disabled = !!s.media.falta || !!s.media.error;
+      $('[data-accion="quitar-video"]', card).disabled = !!o.img || !!S.subiendoPropio;
+    }
+    const pz = $("[data-pausa]", card);
+    if (document.activeElement !== pz && +pz.value !== (e.pausa || 0)) pz.value = e.pausa || 0;
+    $("[data-qajuste]", card).textContent = T("escena.calidad_ajustes", { calidad: T(S.ajustes.calidad === "alta" ? "cal.alta" : "cal.rapida") });
+    // el prompt final (con @personaje y estilo) pasa del límite de CLIP: el final se corta
+    const largo = !e.media && s.prompt_largo, pl = $("[data-prompt-largo]", card);
+    pl.hidden = !largo;
+    pl.textContent = largo ? T(largo.exacto ? "escena.prompt_largo" : "escena.prompt_largo_aprox", { tokens: largo.tokens, max: largo.max }) : "";
+  });
+
+  const m = $("#gMetricas");
+  if (m) {
+    const corto = d.formato !== "largo";
+    const malo = corto ? total > 140 : (total < 1200 || total > 1800);
+    m.innerHTML = `<span><b>${d.escenas.length}</b> ${T("guion.escenas")}</span>
+      <span class="${malo ? "mal" : ""}"><b>${total}</b> ${T("guion.palabras")} <span class="nota">(${T(corto ? "guion.ideal_short" : "guion.ideal_largo")})</span></span>
+      <span><b>${conocida ? "" : "~"}${mmss(dur)}</b> ${T("guion.de_voz")}</span>`;
+  }
+  const av = [];
+  const avisoDuracion = avisoGuionCorto(total, d.formato, dur);
+  if (avisoDuracion) av.push(["", avisoDuracion]);
+  if (S.det?.error_guion) av.push(["error", S.det.error_guion]);
+  d.escenas.forEach((e, i) => {
+    if ((e.texto || "").includes("// VERIFICAR")) av.push(["error", T("escena.av_verificar", { n: i + 1 })]);
+    else if (!e.texto?.trim() || !(e.prompt?.trim() || e.media)) av.push(["", T(!e.texto?.trim() ? "escena.av_falta_texto" : "escena.av_falta_prompt", { n: i + 1 })]);
+    if (est[i]?.media?.falta) av.push(["error", T("escena.av_falta_archivo", { n: i + 1, media: e.media })]);
+    const ms = e.media ? [] : mencionesDe(e.prompt);
+    if (ms.length && PERS.lista && !PERS.lista.some(p => p.nombre === ms[0])) av.push(["error", T("escena.av_personaje_no", { n: i + 1, nombre: ms[0] })]);
+    else if (ms.length > 1) av.push(["", T("escena.av_personaje_varios", { n: i + 1, nombre: ms[0] })]);
+  });
+  if (PERS.soloAlta && d.escenas.some(e => !e.media && mencionesDe(e.prompt).length))
+    av.push(["", T("guion.av_personaje_alta")]);
+  const ul = $("#gAvisos");
+  if (ul) ul.innerHTML = av.map(([c, t]) => `<li class="${c}">${esc(t)}</li>`).join("");
+  renderMusicaInfo();
+  renderVista();
+  renderMiniatura(false);
+}
+
+function moverEscena(i, j) {
+  const e = S.doc.escenas, est = S.det.escenas;
+  [e[i], e[j]] = [e[j], e[i]];
+  if (est[i] && est[j]) [est[i], est[j]] = [est[j], est[i]];
+  S.sucio = true;
+  renderGuion();
+  guardar();
+}
+
+async function accionEscena(accion, i) {
+  const e = S.doc.escenas;
+  if (accion === "subir" && i > 0) moverEscena(i, i - 1);
+  if (accion === "bajar" && i < e.length - 1) moverEscena(i, i + 1);
+  if (accion === "borrar") {
+    if ((e[i].texto || e[i].prompt) && !await confirmarAccion(T("escena.confirmar_borrar", { n: i + 1 }), T("escena.borrar"))) return;
+    e.splice(i, 1); S.det.escenas.splice(i, 1);
+    S.sucio = true; renderGuion(); guardar();
+  }
+  if (accion === "anadir") {
+    e.splice(i + 1, 0, { texto: "", prompt: "" });
+    S.det.escenas.splice(i + 1, 0, {});
+    S.sucio = true; renderGuion(); guardar();
+    $(`.escena[data-i="${i + 1}"] textarea.texto`)?.focus();
+  }
+  if (accion === "imagen" || accion === "imagen-alta") {
+    if (e[i].media) {
+      if (!await confirmarAccion(T('clip.usar_ia'), T('escena.generar_ia'))) return;
+      if (S.doc.escenas !== e) return;
+      delete e[i].media; delete e[i].inicio_clip;
+    }
+    $(`.escena[data-i="${i}"] .menu-img`)?.removeAttribute("open");
+    const alta = accion === "imagen-alta", s = S.det.escenas[i] || {};
+    // otra versión (semilla nueva) salvo cuando aún no hay imagen de la calidad pedida
+    const yaHay = s.img && s.calidad_img === (alta ? "alta" : S.ajustes.calidad);
+    if (alta) e[i].calidad = "alta"; else delete e[i].calidad;  // "alta" queda fijada en el guion para esa escena
+    if (yaHay) e[i].semilla = (e[i].semilla || 0) + 1;
+    S.sucio = true;
+    generar("imagen", i + 1);
+  }
+  if (accion === "propio" || accion === "propio-video") {
+    if (S.subiendoPropio) return;
+    S.propioIdx = i;
+    S.propioObjetivo = { slug:S.slug, doc:S.doc, escena:e[i] };
+    $('#fPropio').accept = accion === 'propio-video' ? '.mp4,.mov,video/mp4,video/quicktime' : '.jpg,.jpeg,.png,image/jpeg,image/png';
+    $("#fPropio").click();
+  }
+  if (accion === 'ver-video') {
+    const media = S.det.escenas[i]?.media;
+    if (media?.url && !media.falta) verClip(media.url, e[i].inicio_clip || 0);
+  }
+  if (accion === 'quitar-video' || (accion === 'quitar-propio' && /\.(mp4|mov)$/i.test(e[i].media || ''))) {
+    if (!await confirmarAccion(T('clip.confirmar_quitar'), T('clip.quitar'))) return;
+    if (S.doc.escenas !== e) return;
+    delete e[i].media; delete e[i].inicio_clip;
+    S.sucio = true; await guardar(); renderGuion();
+    toast(T('clip.quitado'), 'ok');
+    return;
+  }
+  if (accion === "quitar-propio") {
+    $(`.escena[data-i="${i}"] .menu-img`)?.removeAttribute("open");
+    delete e[i].media;
+    delete e[i].inicio_clip;
+    S.sucio = true;
+    await guardar();
+    if (e[i].prompt?.trim()) generar("imagen", i + 1);  // si ya estaba generada sale de caché
+  }
+  if (accion === "voz") {
+    const src = S.det.escenas[i]?.voz;
+    if (!src) return;
+    if (S.audio && !S.audio.paused && S.audioSrc === src) { S.audio.pause(); return; }
+    S.audio?.pause();
+    S.audio = new Audio(src);
+    S.audioSrc = src;
+    S.audio.play().catch(() => toast(T("escena.no_suena"), "error"));
+  }
+}
+
+/** Sube una imagen o clip propio para la escena i y lo anota en el guion ("media"). */
+async function subirPropio(archivo, i) {
+  if (!archivo || S.subiendoPropio) return;
+  const objetivo = S.propioObjetivo || { slug:S.slug, doc:S.doc, escena:S.doc?.escenas[i] };
+  const { slug, doc, escena } = objetivo;
+  if (!escena || S.doc !== doc || S.slug !== slug || !doc.escenas.includes(escena)) return;
+  if (archivo.size > 250 * 1024 * 1024) { toast(T('clip.tamano'), 'error'); return; }
+  if (escena.media && !await confirmarAccion(T('clip.confirmar_reemplazar'), T('clip.reemplazar_archivo'))) return;
+  if (S.doc !== doc || !doc.escenas.includes(escena)) return;
+  S.subiendoPropio = true;
+  actualizarEstados();
+  try {
+    await guardar();
+    if (S.doc !== doc || S.slug !== slug || !doc.escenas.includes(escena)) return;
+    const fd = new FormData(); fd.append("archivo", archivo);
+    toast(T("clip.validando", { nombre:archivo.name }));
+    const r = await fetch(`/api/guiones/${encodeURIComponent(slug)}/propios`, { method:"POST", body:fd, headers:cabeceras() });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(errorHttp(data, r.status));
+    if (S.doc !== doc || S.slug !== slug || !doc.escenas.includes(escena)) { toast(T('clip.escena_cambio'), 'error'); return; }
+    escena.media = data.media;
+    delete escena.inicio_clip;
+    S.sucio = true;
+    await guardar();
+    if (S.doc !== doc || S.sucio || escena.media !== data.media) return;
+    renderGuion();
+    const idx = doc.escenas.indexOf(escena), voz = S.det.escenas[idx]?.duracion;
+    const p = { n:idx + 1, dur:data.duracion?.toFixed(1), voz:voz?.toFixed(1) };
+    toast(data.tipo !== "clip" ? T("propio.imagen", p)
+      : !voz ? T("propio.clip", p) : T(data.duracion > voz ? "propio.clip_corta" : "propio.clip_congela", p), "ok");
+  } catch (err) { toast(err.message, "error"); }
+  finally { S.subiendoPropio = false; if (S.slug) actualizarEstados(); }
+}
+
+function verClip(url, inicio = 0) {
+  const dlg = document.createElement('dialog');
+  dlg.className = 'modal clip-preview';
+  dlg.setAttribute('aria-label', T('clip.preview'));
+  dlg.innerHTML = `<div class="fila"><h3>${esc(T('clip.preview'))}</h3><button type="button" class="btn chico" autofocus>${esc(T('clip.cerrar'))}</button></div><video controls muted playsinline preload="metadata"></video>`;
+  const video = $('video', dlg);
+  video.src = url;
+  video.onloadedmetadata = () => { if (inicio < video.duration) video.currentTime = inicio; };
+  $('button', dlg).onclick = () => dlg.close();
+  dlg.onclose = () => { video.pause(); video.removeAttribute('src'); video.load(); dlg.remove(); };
+  document.body.append(dlg); dlg.showModal();
+}
+
+// ---------------- columna 3: Vista previa ----------------
+function renderVista() {
+  const cont = $("#vistaCuerpo");
+  if (!S.slug) { cont.innerHTML = `<div class="reproductor vertical"><div class="sin">${T("vista.aqui")}</div></div>`; return; }
+  const d = S.doc, det = S.det, v = det.video;
+  const vertical = d.formato !== "largo";
+  const ts = det.trabajos || [];
+  const tv = [...ts].reverse().find(t => t.tipo === "video");
+  const ultimo = ts[ts.length - 1];
+  const generando = tv && (tv.estado === "en cola" || tv.estado === "corriendo");
+  const completo = d.escenas.length && d.escenas.every(e => e.texto?.trim() && (e.prompt?.trim() || e.media));
+
+  // el <video> solo se reemplaza si cambió el archivo: si no, se cortaría la reproducción en cada sondeo
+  let rep = $("#reproductor");
+  const clave = `${v?.url || ""}|${vertical}|${LANG}`;
+  if (!rep || rep.dataset.clave !== clave) {
+    cont.innerHTML = `
+      <div class="reproductor ${vertical ? "vertical" : "horizontal"}" id="reproductor" data-clave="${esc(clave)}">
+        ${v ? `<video src="${esc(v.url)}#t=0.1" controls playsinline preload="metadata"></video>` : `<div class="sin">${T("vista.sin_video_html")}</div>`}
+      </div>
+      <div id="vistaDinamica"></div>
+      <div id="miniaturaCaja"></div>`;
+    renderMiniatura(true);
+  }
+  const pasosHtml = tv ? tv.pasos.map(p => {
+    const ic = { ok: "✓", cache: "↺", error: "✕", corriendo: '<span class="giro"></span>', pendiente: "○" }[p.estado] || "○";
+    const seg = p.estado === "cache" ? T("vista.cache") : p.segundos != null ? `${p.segundos}s` : "";
+    return `<li class="${p.estado}"><span class="ic">${ic}</span><span>${esc(p.nombre)}</span><span class="seg">${seg}</span></li>`;
+  }).join("") : "";
+  const pct = tv ? Math.round(tv.progreso * 100) : 0;
+  const durTrabajo = tv?.inicio ? Math.round((tv.fin || Date.now() / 1000) - tv.inicio) : null;
+  const logT = ultimo;
+  const dyn = $("#vistaDinamica");
+  const abiertoLog = $("details.log", dyn)?.open ?? false;
+  dyn.innerHTML = `
+    ${v ? `<div class="video-info"><span>${mmss(v.duracion)} · ${hace(v.fecha)}</span>
+      ${v.desactualizado ? `<span class="badge b-generando" title="${T("vista.desactualizado_d")}">${T("vista.desactualizado")}</span>` : `<span class="badge b-listo">${T("vista.listo")}</span>`}</div>` : ""}
+    <button class="btn primario grande" id="bGenerar" ${generando || !completo || !puedeExportar(S.slug) ? "disabled" : ""}>
+      ${generando ? `<span class="giro"></span> ${T(tv.estado === "en cola" ? "vista.en_cola" : "vista.generando")}` : T(v ? "vista.regenerar" : "vista.generar")}</button>
+    ${!completo ? `<p class="nota" style="margin:6px 0 0">${T("vista.completa")}</p>` : ""}
+    ${tv ? `
+      <div style="margin-top:16px"><div class="barra"><i style="width:${pct}%"></i></div></div>
+      <div class="progreso-txt"><span>${T({ "en cola": "trabajo.en_cola", corriendo: "trabajo.corriendo", listo: "trabajo.listo", error: "trabajo.error" }[tv.estado] || tv.estado)}${durTrabajo != null ? ` · ${mmss(durTrabajo)}` : ""}</span><span>${pct}%</span></div>
+      ${tv.error ? `<div class="error-box">${esc(tv.error)}</div>` : ""}
+      <ul class="pasos">${pasosHtml}</ul>` : ""}
+    ${logT ? `<details class="log" ${abiertoLog || generando ? "open" : ""}><summary>${esc(T("log.titulo", { que: T(`logde.${logT.tipo}`, { n: logT.escena }) }))}</summary>
+      <pre id="logPre">${esc(logT.log.join("\n")) || "…"}</pre></details>` : ""}
+    <div class="fila" style="margin-top:12px">
+      <button class="btn" id="bAbrir">${T("vista.abrir")}</button>
+      ${v ? `<a class="btn" href="${esc(v.url)}" download="${esc(S.slug)}.mp4">${T("comun.descargar")}</a>` : ""}
+    </div>
+    ${v && !generando ? `<button class="btn primario grande" id="bOtroVideo">${T("vista.otro_video")}</button>` : ""}`;
+  const pre = $("#logPre");
+  if (pre) pre.scrollTop = pre.scrollHeight;
+  $(".pasos li.corriendo", dyn)?.scrollIntoView({ block: "nearest" });
+}
+
+// ---------------- subtítulos ----------------
+let SUBS = null;  // catálogo: fuentes, tamaños, posiciones, valores por defecto
+const POS_TXT = p => T(`pos.${p}`);
+const TAM_TXT = t => T(`tam.${t}`);
+
+function cargarFuentesCss() {
+  const css = SUBS.fuentes.map(f => `@font-face { font-family: "sub-${f.id}"; src: url("/fuentes/${encodeURIComponent(f.archivo)}"); }`).join("\n");
+  document.head.append(Object.assign(document.createElement("style"), { textContent: css }));
+}
+
+/** Estilos rápidos de Ajustes → Subtítulos. Lo que no traen sale de SUBS.defecto (Clásico = el defecto). */
+const PRESETS_SUBS = [
+  ["viral", { fuente: "montserrat", tamano: "grande", mayusculas: true, karaoke: true, borde: 32 }],
+  ["limpio", { fuente: "poppins", tamano: "medio", mayusculas: false, karaoke: true, borde: 10 }],
+  ["documental", { fuente: "oswald", tamano: "medio", posicion: "abajo", karaoke: false, sombra: true }],
+  ["bold", { fuente: "anton", tamano: "muy_grande", mayusculas: true, karaoke: true, color: "#ffffff", color_borde: "#000000", borde: 28 }],
+  ["clasico", {}],
+];
+const presetSubs = id => ({ ...SUBS.defecto, ...PRESETS_SUBS.find(p => p[0] === id)[1] });
+
+/** Marca el chip cuyo estilo coincide del todo con 'v'; si el usuario tocó algo, ninguno. */
+function marcarPresetSubs(el, v) {
+  const chips = $$("[data-preset]", el);
+  if (!chips.length) return;
+  const igual = id => { const p = presetSubs(id); return Object.keys(p).every(k => p[k] === v[k]); };
+  chips.forEach(c => c.classList.toggle("activa", igual(c.dataset.preset)));
+}
+
+function htmlControlesSubs(conPresets = false) {
+  return `<div class="subs-ctl">
+    ${conPresets ? `<div class="campo"><span class="etq-campo">${T("subs.presets")}</span>
+      <div class="chips">${PRESETS_SUBS.map(([id]) => `<button type="button" class="chip" data-preset="${id}">${T(`subs.preset.${id}`)}</button>`).join("")}</div></div>` : ""}
+    <label class="campo"><span>${T("subs.fuente")}</span>
+      <select data-k="fuente">${SUBS.fuentes.map(f => `<option value="${f.id}">${esc(f.nombre)}</option>`).join("")}</select>
+      <div class="muestra" data-muestra></div></label>
+    <label class="campo"><span>${T("subs.tamano")} <b data-tamtxt></b></span><input type="range" min="0" max="${SUBS.tamanos.length - 1}" step="1" data-k="tamano"></label>
+    <div class="campo"><label class="campo" style="margin:0"><span>${T("subs.posicion")}</span></label>
+      <div class="segmentado" data-k="posicion">${SUBS.posiciones.map(p => `<button type="button" data-v="${p}">${POS_TXT(p)}</button>`).join("")}</div></div>
+    <div class="colores">
+      <label>${T("subs.texto")} <input type="color" data-k="color"></label>
+      <label>${T("subs.borde")} <input type="color" data-k="color_borde"></label>
+    </div>
+    <label class="campo"><span>${T("subs.grosor")} <b data-bordetxt></b></span><input type="range" min="0" max="40" step="1" data-k="borde"></label>
+    <label class="campo"><span>${T("subs.sombra")}</span><select data-k="sombra">
+      <option value="auto">${T("subs.sombra_auto")}</option><option value="si">${T("comun.Si")}</option><option value="no">${T("comun.No")}</option></select></label>
+    <label class="interruptor"><div>${T("subs.mayusculas")}</div><input type="checkbox" data-k="mayusculas"></label>
+    <label class="interruptor"><div>${T("subs.karaoke")}<small>${T("subs.karaoke_d")}</small></div><input type="checkbox" data-k="karaoke"></label>
+    <div class="fila" style="margin-top:10px">
+      <button type="button" class="btn" data-preview>${T("subs.previsualizar")}</button>
+      <button type="button" class="btn fantasma chico" data-reset>${T("subs.reset")}</button>
+    </div>
+    <div class="preview-subs" data-previewcaja></div>
+  </div>`;
+}
+
+function ponerSubs(el, v) {
+  v = { ...SUBS.defecto, ...v };
+  $('[data-k="fuente"]', el).value = v.fuente;
+  $('[data-k="tamano"]', el).value = SUBS.tamanos.findIndex(t => t.id === v.tamano);
+  $$('[data-k="posicion"] button', el).forEach(b => b.classList.toggle("activa", b.dataset.v === v.posicion));
+  $('[data-k="color"]', el).value = v.color;
+  $('[data-k="color_borde"]', el).value = v.color_borde;
+  $('[data-k="borde"]', el).value = v.borde;
+  $('[data-k="sombra"]', el).value = v.sombra == null ? "auto" : v.sombra ? "si" : "no";
+  $('[data-k="mayusculas"]', el).checked = v.mayusculas;
+  $('[data-k="karaoke"]', el).checked = v.karaoke;
+  etiquetasSubs(el, v);
+}
+
+function leerSubs(el) {
+  const sombra = $('[data-k="sombra"]', el).value;
+  return {
+    fuente: $('[data-k="fuente"]', el).value,
+    tamano: SUBS.tamanos[+$('[data-k="tamano"]', el).value].id,
+    posicion: $('[data-k="posicion"] button.activa', el)?.dataset.v || "centro_bajo",
+    mayusculas: $('[data-k="mayusculas"]', el).checked,
+    color: $('[data-k="color"]', el).value,
+    color_borde: $('[data-k="color_borde"]', el).value,
+    borde: +$('[data-k="borde"]', el).value,
+    sombra: sombra === "auto" ? null : sombra === "si",
+    karaoke: $('[data-k="karaoke"]', el).checked,
+  };
+}
+
+function etiquetasSubs(el, v) {
+  const t = SUBS.tamanos.find(x => x.id === v.tamano);
+  $("[data-tamtxt]", el).textContent = `${TAM_TXT(v.tamano)} · ${t.px} px`;
+  $("[data-bordetxt]", el).textContent = `${v.borde} px`;
+  // muestra aproximada en el navegador (la vista previa real es la de ffmpeg)
+  const m = $("[data-muestra]", el);
+  const txt = v.mayusculas ? T("subs.muestra").toLocaleUpperCase(LANG) : T("subs.muestra");
+  const pal = txt.split(" ");
+  m.innerHTML = pal.map((p, i) => v.karaoke && i === 1 ? `<span class="k">${p}</span>` : p).join(" ");
+  Object.assign(m.style, {
+    fontFamily: `"sub-${v.fuente}"`, color: v.color,
+    webkitTextStroke: v.borde ? `${Math.max(1, v.borde / 3.5).toFixed(1)}px ${v.color_borde}` : "0",
+    textShadow: v.sombra ? "2px 3px 3px rgba(0,0,0,.6)" : "none",
+  });
+  marcarPresetSubs(el, v);
+}
+
+/** Conecta un bloque de controles: alCambiar(valores) en cada cambio; cuerpoPreview(valores) arma el pedido
+ *  de vista previa, que se muestra en 'caja' (por defecto, la de dentro del bloque). */
+function conectarSubs(el, alCambiar, cuerpoPreview, caja = $("[data-previewcaja]", el)) {
+  const cambio = () => { const v = leerSubs(el); etiquetasSubs(el, v); alCambiar(v); };
+  el.addEventListener("input", e => { if (e.target.matches("[data-k]")) cambio(); });
+  el.addEventListener("change", e => { if (e.target.matches("[data-k]")) cambio(); });
+  el.addEventListener("click", async e => {
+    const pos = e.target.closest('[data-k="posicion"] button');
+    if (pos) { $$('[data-k="posicion"] button', el).forEach(b => b.classList.toggle("activa", b === pos)); cambio(); }
+    if (e.target.closest("[data-reset]")) { ponerSubs(el, SUBS.defecto); cambio(); }
+    const preset = e.target.closest("[data-preset]");
+    if (preset) {
+      ponerSubs(el, presetSubs(preset.dataset.preset)); cambio();
+      // si ya hay una vista previa real en pantalla, se rehace con el estilo nuevo
+      if ($("img", caja)) $("[data-preview]", el).click();
+    }
+    const b = e.target.closest("[data-preview]");
+    if (!b) return;
+    b.disabled = true; b.innerHTML = `<span class="giro"></span> ${T("subs.renderizando")}`;
+    try {
+      const { data } = await api("POST", "/api/subtitulos/preview", cuerpoPreview(leerSubs(el)));
+      caja.innerHTML = `<img src="${esc(data.url)}" alt="${T("subs.preview_alt")}">
+        <p class="nota">${T("subs.preview_nota_html", { slug: esc(data.slug), s: data.segundos })}</p>`;
+    } catch (err) { caja.innerHTML = `<div class="error-box">${esc(err.message)}</div>`; }
+    finally { b.disabled = false; b.textContent = T("subs.previsualizar"); }
+  });
+  caja.addEventListener("click", e => { const img = e.target.closest("img"); if (img) verImagen(img.src); });
+}
+
+function renderSubsGuion() {
+  const d = datosIdea();
+  const propio = !!(d.subtitulos && Object.keys(d.subtitulos).length);
+  $$("#fSubsModo button").forEach(b => b.classList.toggle("activa", b.dataset.v === (propio ? "propio" : "global")));
+  $("#subsModoTxt").textContent = T(propio ? "subs.modo_propio" : "subs.modo_global");
+  const cont = $("#subsGuionCtl");
+  if (!cont.firstElementChild) {
+    cont.innerHTML = htmlControlesSubs(true);
+    conectarSubs(cont.firstElementChild,
+      v => { if (Object.keys(datosIdea().subtitulos || {}).length) { datosIdea().subtitulos = v; if (S.slug) guardarLuego(); } },
+      v => ({ slug: S.slug || undefined, estilo_guion: Object.keys(datosIdea().subtitulos || {}).length ? v : {},
+              marca_guion: datosIdea().marca === false ? false : Object.keys(datosIdea().marca || {}).length ? datosIdea().marca : {} }));
+  }
+  ponerSubs(cont, propio ? d.subtitulos : (S.ajustes.estilo_subtitulos || {}));
+  // en modo global los controles muestran el estilo global, sin poder editarlo aquí
+  $$("[data-k]", cont).forEach(x => { x.disabled = !propio; });
+  $$('[data-k="posicion"] button, [data-preset]', cont).forEach(x => { x.disabled = !propio; });
+  $("[data-reset]", cont).hidden = !propio;
+}
+
+// ---------------- marca de agua ----------------
+// Catálogo en SUBS.marca (de /api/subtitulos): tamaños con su alto en px de un Short, esquinas, margen y defecto.
+function htmlControlesMarca() {
+  const M = SUBS.marca;
+  return `<div class="marca-ctl">
+    <div class="campo"><span class="etq-campo">${T("marca.tamano")}</span>
+      <div class="segmentado" data-m="tamano">${M.tamanos.map(t => `<button type="button" data-v="${t.id}">${T(`marca.${t.id}`)}<small>${t.px} px</small></button>`).join("")}</div></div>
+    <div class="campo"><span class="etq-campo">${T("marca.posicion")}</span>
+      <div class="segmentado esquinas" data-m="posicion">${["arriba_izq", "arriba_der", "abajo_izq", "abajo_der"].map(p => `<button type="button" data-v="${p}">${T(`marca.${p}`)}</button>`).join("")}</div></div>
+    <label class="campo"><span>${T("marca.margen")} <b data-margentxt></b></span>
+      <input type="range" min="${M.margen[0]}" max="${M.margen[1]}" step="5" data-m="margen"></label>
+    <p class="nota">${T("marca.nota")}</p>
+  </div>`;
+}
+
+function ponerMarca(el, v) {
+  v = { ...SUBS.marca.defecto, ...v };
+  for (const k of ["tamano", "posicion"]) $$(`[data-m="${k}"] button`, el).forEach(b => b.classList.toggle("activa", b.dataset.v === v[k]));
+  $('[data-m="margen"]', el).value = v.margen;
+  $("[data-margentxt]", el).textContent = `${v.margen} px`;
+}
+
+function leerMarca(el) {
+  return {
+    tamano: $('[data-m="tamano"] button.activa', el)?.dataset.v || SUBS.marca.defecto.tamano,
+    posicion: $('[data-m="posicion"] button.activa', el)?.dataset.v || SUBS.marca.defecto.posicion,
+    margen: +$('[data-m="margen"]', el).value,
+  };
+}
+
+/** alCambiar(valores) en cada cambio (botones y slider). */
+function conectarMarca(el, alCambiar) {
+  const cambio = () => { const v = leerMarca(el); $("[data-margentxt]", el).textContent = `${v.margen} px`; alCambiar(v); };
+  el.addEventListener("click", e => {
+    const b = e.target.closest("[data-m] button");
+    if (!b || b.disabled) return;
+    $$("button", b.parentElement).forEach(x => x.classList.toggle("activa", x === b));
+    cambio();
+  });
+  el.addEventListener("input", e => { if (e.target.matches("[data-m]")) cambio(); });
+}
+
+/** Si ya hay una vista previa de subtítulos en pantalla, se rehace: la marca de agua sale en ella.
+ *  'ctl' es el bloque de controles de subtítulos; 'caja', donde está la imagen de la vista previa. */
+const refrescarPreview = (() => {
+  const timers = new WeakMap();
+  return (ctl, caja) => {
+    if (!ctl || !$("img", caja)) return;
+    clearTimeout(timers.get(ctl));
+    timers.set(ctl, setTimeout(() => $("[data-preview]", ctl)?.click(), 400));
+  };
+})();
+const refrescarPreviewAjustes = () => refrescarPreview($("#aSubs2 .subs-ctl"), $("#aSubs2 [data-previewcaja]"));
+const refrescarPreviewGuion = () => refrescarPreview($("#subsGuionCtl .subs-ctl"), $("#subsGuionCtl [data-previewcaja]"));
+
+function renderMarcaAjustes(estilo = S.ajustes.estilo_marca || {}) {
+  const cont = $("#aMarcaCtl");
+  if (!SUBS) return;
+  if (!cont.firstElementChild) {
+    cont.innerHTML = htmlControlesMarca();
+    conectarMarca(cont.firstElementChild, refrescarPreviewAjustes);
+  }
+  ponerMarca(cont, estilo);
+  cont.hidden = !$("#aMarca").checked;
+}
+
+function renderMarcaGuion() {
+  const d = datosIdea();
+  const ninguna = d.marca === false;  // "Sin marca": ni en el video ni en la miniatura
+  const propio = !ninguna && !!(d.marca && Object.keys(d.marca).length);
+  const modo = ninguna ? "ninguna" : propio ? "propio" : "global";
+  $$("#fMarcaModo button").forEach(b => b.classList.toggle("activa", b.dataset.v === modo));
+  $("#marcaModoTxt").textContent = T(ninguna ? "marca.modo_ninguna" : propio ? "subs.modo_propio" : "subs.modo_global");
+  $("#marcaApagada").hidden = ninguna || !!S.ajustes.marca_agua;
+  $("#marcaNinguna").hidden = !ninguna;
+  const cont = $("#marcaGuionCtl");
+  cont.hidden = ninguna;
+  if (!cont.firstElementChild) {
+    cont.innerHTML = htmlControlesMarca();
+    conectarMarca(cont.firstElementChild, v => {
+      if (!Object.keys(datosIdea().marca || {}).length) return;
+      datosIdea().marca = v;
+      if (S.slug) guardarLuego();
+      refrescarPreviewGuion();
+    });
+  }
+  ponerMarca(cont, propio ? d.marca : (S.ajustes.estilo_marca || {}));
+  // en modo global se ve el ajuste global, sin poder editarlo aquí
+  $$("[data-m], [data-m] button", cont).forEach(x => { x.disabled = !propio; });
+}
+
+// ---------------- tarjeta de cierre ----------------
+// Campo "cierre" del guion: sin él (o "global") = Ajustes; "ninguno"; o "propios/cierre.png" (imagen subida).
+function renderCierreGuion() {
+  const d = datosIdea(), c = d?.cierre || "global";
+  const modo = c === "global" || c === "ninguno" ? c : "propio";
+  $$("#fCierreModo button").forEach(b => b.classList.toggle("activa", b.dataset.v === modo));
+  $("#cierreModoTxt").textContent = T(`cierre.modo_${modo}`);
+  const a = S.ajustes;
+  $("#cierreNota").textContent = modo === "ninguno" ? T("cierre.nota_ninguno")
+    : modo === "propio" ? T("cierre.nota_propio")
+    : !a.cierre_tarjeta ? T("cierre.nota_global_no")
+    : a.cierre_nombre ? T("cierre.nota_global_si", { nombre: a.cierre_nombre }) : T("cierre.nota_global_logo");
+  const img = $("#cierrePreview");
+  img.hidden = modo !== "propio" || !S.slug;
+  if (!img.hidden) img.src = `/propios/${encodeURIComponent(S.slug)}/${encodeURIComponent(c.split("/").pop())}?v=${S.cierreV || 0}`;
+  $("#bCierreSubir").hidden = modo !== "propio";
+}
+
+/** Sube la imagen de la tarjeta de cierre (assets/propios/<slug>/cierre.png|jpg) y la anota en el guion. */
+async function subirCierre(archivo) {
+  if (!archivo) return;
+  const { slug, doc } = S;
+  if (!slug || !doc) { toast(T("cierre.sin_guardar"), "error"); return; }
+  try {
+    await guardar();
+    await S.cadena;
+    const fd = new FormData(); fd.append("archivo", archivo);
+    const r = await fetch(`/api/guiones/${encodeURIComponent(slug)}/propios?destino=cierre`, { method:"POST", body:fd, headers:cabeceras() });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(errorHttp(data, r.status));
+    if (S.doc !== doc || S.slug !== slug) return;
+    doc.cierre = data.media;
+    S.cierreV = Date.now();
+    S.sucio = true;
+    await guardar();
+    renderCierreGuion();
+    toast(T("cierre.subida"), "ok");
+  } catch (err) { toast(err.message, "error"); }
+}
+
+// ---------------- exportar ----------------
+/** Versión gratuita (app/licencia.py, LICENCIA_REQUERIDA = False): siempre se puede exportar.
+ *  El servidor sigue siendo quien decide al encolar y al publicar. */
+function puedeExportar() { return true; }
+
+// ---------------- configuración inicial (setup) ----------------
+// Estado en /api/setup (app/preparar.py). Se muestra sola la primera vez en la app instalada.
+const SETUP = { timer: null, falloConexion: false };
+const COMPS_SETUP = ["ffmpeg", "ia", "turbo", "kokoro", "whisper", "base", "adapter"];
+const tamGB = b => b >= 1e9 ? `${(b / 1e9).toFixed(1)} GB` : b > 0 ? `${Math.max(1, Math.round(b / 1e6))} MB` : "0 MB";
+const durTxt = s => s >= 3600 ? `${Math.floor(s / 3600)} h ${Math.round(s % 3600 / 60)} min` : s >= 60 ? `${Math.round(s / 60)} min` : `${Math.round(s)} s`;
+
+async function cargarSetup(fresco = false) {
+  try {
+    S.setup = (await api("GET", `/api/setup${fresco ? "?fresco=true" : ""}`)).data;
+    SETUP.falloConexion = false;
+    if (ruta().tab === "setup") renderSetup();
+  } catch {
+    const mensaje = T("comun.no_conecta", { error: T("setup.reintentar") });
+    if (!SETUP.falloConexion) toast(mensaje, "error");
+    SETUP.falloConexion = true;
+    if (ruta().tab === "setup") $("#setupVerif").innerHTML = `<div class="caja-error">${esc(mensaje)}</div>`;
+  } finally {
+    programarSetup();
+  }
+}
+
+function programarSetup() {
+  clearTimeout(SETUP.timer);
+  if (ruta().tab !== "setup") return;
+  const activo = !SETUP.falloConexion && S.setup && ["descargando", "verificando"].includes(S.setup.fase);
+  SETUP.timer = setTimeout(cargarSetup, activo ? 1000 : 6000);
+}
+
+function perfilSetup(e) {
+  return "completo";
+}
+const compsDe = (e, perfil) => COMPS_SETUP.filter(c => e.componentes[c].perfiles.includes(perfil));
+/** Lo que falta bajar de un perfil (solo lo que la app gestiona). */
+function faltaPerfil(e, perfil) {
+  return compsDe(e, perfil).map(c => e.componentes[c]).filter(c => c.gestionable && !c.presente)
+    .reduce((s, c) => s + Math.max(0, c.total - c.hecho), 0);
+}
+
+function renderSetup() {
+  const e = S.setup;
+  if (!e) return;
+  const q = e.equipo, g = q.gpu, mal = new Set(q.problemas);
+  $("#setupDev").hidden = e.instalado;
+  const fila = (etq, valor, ok, req) => `<div class="dato"><span>${etq}</span><span class="${ok ? "ok" : "mal"}">${ok ? "✓" : "⚠"} ${valor}${req ? `<small>${req}</small>` : ""}</span></div>`;
+  $("#setupEquipo").innerHTML = (g ? fila(T("setup.gpu"), esc(g.nombre), true)
+      + fila(T("setup.vram"), `${g.vram_gb} GB`, !mal.has("vram"), T("setup.req_vram", { n: q.requisitos.vram_gb }))
+      + fila(T("setup.driver"), esc(g.driver), !mal.has("driver"), mal.has("driver") ? T("setup.req_driver", { n: q.requisitos.driver_min }) : "")
+    : fila(T("setup.gpu"), T("setup.sin_gpu"), false))
+    + fila(T("setup.disco"), `${q.disco_libre_gb} GB`, !mal.has("disco"), T("setup.req_disco", { n: q.requisitos.disco_gb }))
+    + (q.cumple ? "" : `<div class="caja-aviso">${T("setup.no_cumple_html")}</div>`);
+
+  const perfil = perfilSetup(e);
+  const ocupado = ["descargando", "verificando"].includes(e.fase);
+  $("#setupPerfiles").innerHTML = `<p class="nota">${T("setup.completo_d")}</p>`;
+
+  const comps = compsDe(e, perfil);
+  const todoPresente = comps.every(id => e.componentes[id].presente);
+  let hecho = 0, total = 0;
+  const filas = comps.map(id => {
+    const c = e.componentes[id];
+    const est = c.gestionable ? c.estado : (c.presente ? "listo" : "desarrollo");
+    if (c.gestionable) { total += c.total; hecho += c.presente ? c.total : Math.min(c.hecho, c.total); }
+    const pct = c.presente ? 100 : Math.round(100 * Math.min(c.hecho, c.total) / (c.total || 1));
+    const tam = c.presente ? (c.exacto ? tamGB(c.total) : "") : c.hecho > 0 ? `${tamGB(Math.min(c.hecho, c.total))} / ${tamGB(c.total)}` : `${c.exacto ? "" : "~"}${tamGB(c.total)}`;
+    return `<div class="comp"><span>${T(`setup.c.${id}`)}</span>
+      <span class="estado ${est}">${T(`setup.e.${est}`)}${est === "descargando" ? ` · ${pct}%` : ""}${tam ? ` · ${tam}` : ""}</span>
+      ${c.gestionable ? `<div class="barra"><i style="width:${pct}%"></i></div>` : ""}</div>`;
+  }).join("");
+  const falta = faltaPerfil(e, perfil);
+  const vel = e.velocidad;
+  const resumen = `<div class="setup-total"><span>${T("setup.total", { hecho: `<b>${tamGB(hecho)}</b>`, total: `<b>${tamGB(total)}</b>` })}</span>
+    ${e.fase === "descargando" && vel ? `<span>${T("setup.velocidad", { v: tamGB(vel) })} · ${T("setup.quedan", { t: durTxt(falta / vel) })}</span>` : ""}</div>
+    <div class="barra"><i style="width:${total ? Math.round(100 * hecho / total) : 0}%"></i></div>`;
+  let acciones;
+  if (e.fase === "descargando") acciones = `<button class="btn" data-setup="pausar">${T("setup.pausar")}</button>`;
+  else if (todoPresente) acciones = `<span class="nota">${T("setup.nada")}</span>`;
+  else {
+    const etq = e.fase === "error" ? T("setup.reintentar") : e.fase === "pausado" ? T("setup.reanudar") : T("setup.iniciar", { total: tamGB(falta) });
+    acciones = `<button class="btn primario" data-setup="iniciar" ${e.fase === "verificando" || !q.cumple ? "disabled" : ""}>${etq}</button>`
+      + (e.fase === "pausado" ? `<span class="nota">${T("setup.pausa_nota")}</span>` : "");
+  }
+  const errDescarga = e.fase === "error" && !todoPresente ? `<div class="caja-error">${T("setup.error_html", { error: esc(e.error || "") })}</div>` : "";
+  $("#setupDescargas").innerHTML = filas + resumen + `<div class="setup-acciones">${acciones}</div>` + errDescarga;
+
+  // prueba final
+  const v = e.verificacion, listoTodo = todoPresente;
+  const verificada = v && v.ok && !v.solo_voz && ["ffmpeg", "voz", "imagen"].every(k => v.pasos?.[k]?.ok);
+  let html = "";
+  if (e.fase === "verificando") html = `<p class="nota"><span class="giro"></span> ${T("setup.verificando")}</p>`;
+  else if (verificada && listoTodo) {
+    const pa = v.pasos || {};
+    const linea = (k, txt) => pa[k] ? `<div class="dato"><span>${T(`setup.v.${k}`)}</span><span class="ok">✓ ${txt}</span></div>` : "";
+    html = `<div class="setup-listo">✓ ${T("setup.listo")}</div>`
+      + linea("ffmpeg", esc(pa.ffmpeg?.version || ""))
+      + linea("voz", pa.voz?.carga_s != null ? `${T("setup.v.carga", { s: pa.voz.carga_s })} · ${T("setup.v.gen", { s: pa.voz.sintesis_s })}` : T("setup.v.seg", { s: pa.voz?.segundos }))
+      + linea("imagen", pa.imagen ? `${T("setup.v.carga", { s: pa.imagen.carga_s })} · ${T("setup.v.gen", { s: pa.imagen.imagen_s })}${pa.imagen.cuda ? "" : ` · ${T("setup.v.cpu")}`}` : "");
+  } else if (v && !v.ok) {
+    html = `<div class="caja-error">${T("setup.v.fallo_html", { error: esc(v.error || ""), log: esc(`${q.ruta_datos}\\logs\\server.log`) })}</div>`;
+  }
+  if (e.fase !== "verificando" && listoTodo && !verificada)
+    html += `<div class="setup-acciones"><button class="btn primario" data-setup="verificar">${T("setup.verificar")}</button></div>`;
+  $("#setupVerif").innerHTML = html;
+  $("#bSetupEmpezar").disabled = ocupado || !listoTodo || !verificada;
+}
+
+async function accionSetup(a) {
+  const e = S.setup;
+  try {
+    if (a === "iniciar") S.setup = (await api("POST", "/api/setup/iniciar", { perfil: perfilSetup(e) })).data;
+    if (a === "pausar") await api("POST", "/api/setup/pausar");
+    if (a === "verificar") S.setup = (await api("POST", "/api/setup/verificar")).data;
+    if (a === "empezar") { await api("POST", "/api/setup/visto"); ir("nuevo"); return; }
+  } catch (err) { toast(err.message, "error"); }
+  renderSetup();
+  cargarSetup();
+}
+
+/** "Apoyar el proyecto ☕": la página se abre en el navegador del sistema (URL_APOYO, app/version.py). */
+async function abrirApoyo() {
+  try { await api("POST", "/api/apoyar"); }
+  catch { if (S.ajustes?.url_apoyo) window.open(S.ajustes.url_apoyo, "_blank", "noopener"); }
+}
+
+async function resumenSetupAjustes() {
+  try {
+    const e = (await api("GET", "/api/setup")).data;
+    const n = COMPS_SETUP.filter(c => e.componentes[c].presente).length;
+    $("#aSetupResumen").textContent = T("aj.setup_resumen", { n, total: COMPS_SETUP.length });
+  } catch { $("#aSetupResumen").textContent = ""; }
+}
+
+// ---------------- miniatura ----------------
+/** completo=true reconstruye el formulario; si no, solo refresca imagen, estado y opciones (sin quitar el foco). */
+function renderMiniatura(completo) {
+  const caja = $("#miniaturaCaja");
+  if (!caja || !S.slug) return;
+  const d = S.doc, vertical = d.formato !== "largo";
+  if (completo || !$("#fTituloMini", caja)) {
+    caja.innerHTML = `
+      <h3 class="sub">${T("miniatura.titulo")}</h3>
+      <div class="mini-prev ${vertical ? "vertical" : "horizontal"}" id="miniPrev"></div>
+      <label class="campo"><span>${T("miniatura.campo")} <span class="contador" id="miniCont"></span></span>
+        <input id="fTituloMini" type="text" placeholder="${T("miniatura.ph")}">
+        <span class="nota">${T("miniatura.nota")}</span></label>
+      <label class="campo"><span>${T("miniatura.base")}</span><select id="fMiniEscena"></select></label>
+      <div class="fila">
+        <button class="btn" id="bMiniatura">${T("miniatura.regenerar")}</button>
+        <a class="btn" id="bMiniDescargar" download="${esc(S.slug)}_miniatura.jpg">${T("comun.descargar")}</a>
+      </div>`;
+    $("#fTituloMini").value = d.titulo_miniatura || "";
+  }
+  const n = palabras((d.titulo_miniatura || "").replace(/\*/g, " "));
+  const cont = $("#miniCont");
+  cont.textContent = T("miniatura.contador", { n });
+  cont.classList.toggle("mal", n > 6);
+
+  const sel = $("#fMiniEscena");
+  const opciones = d.escenas.map((e, i) => `<option value="${i + 1}">${T("miniatura.escena", { n: i + 1, texto: esc((e.texto || e.prompt || "").slice(0, 48)) })}</option>`).join("");
+  if (sel.dataset.ops !== opciones && document.activeElement !== sel) { sel.dataset.ops = opciones; sel.innerHTML = opciones; }
+  sel.value = String(Math.min(d.miniatura_escena || 1, d.escenas.length || 1));
+
+  const m = S.det?.miniatura;
+  const tm = [...(S.det?.trabajos || [])].reverse().find(t => t.tipo === "miniatura" || (t.tipo === "video" && t.pasos.some(p => p.id === "miniatura" && p.estado === "corriendo")));
+  const activa = tm && (tm.estado === "en cola" || tm.estado === "corriendo");
+  const capa = activa ? `<div class="capa"><span class="giro"></span>${T(tm.estado === "en cola" ? "mini.en_cola" : "mini.generando")}</div>` : "";
+  const prev = $("#miniPrev");
+  const clave = `${m?.url || ""}|${capa}|${LANG}`;
+  if (prev.dataset.clave !== clave) {
+    prev.dataset.clave = clave;
+    prev.innerHTML = (m ? `<img src="${esc(m.url)}" alt="${T("miniatura.alt")}">` : `<div class="sin">${T("miniatura.sin_html")}</div>`) + capa;
+  }
+  if (tm?.tipo === "miniatura" && tm.estado === "error") toastUnaVez(tm.id, tm.error);
+  $("#bMiniatura").disabled = activa || !d.escenas.length;
+  const b = $("#bMiniDescargar");
+  b.hidden = !m;
+  if (m) b.href = m.url;
+}
+
+const _avisados = new Set();
+function toastUnaVez(id, msg) { if (!_avisados.has(id)) { _avisados.add(id); toast(msg, "error"); } }
+
+// ---------------- biblioteca ----------------
+let BIB = [];
+async function cargarBiblioteca() {
+  try { BIB = (await api("GET", "/api/guiones")).data; } catch (e) { toast(e.message, "error"); }
+  renderBiblioteca();
+}
+function renderBiblioteca() {
+  const cuenta = k => k === "todos" ? BIB.length : BIB.filter(t => t.estado === k).length;
+  $("#bibFiltros").innerHTML = ["todos", "idea", "guion", "generando", "listo"].map(k =>
+    `<button class="chip ${S.filtro === k ? "activa" : ""}" data-filtro="${k}">${k === "todos" ? T("bib.todos") : estadoTxt(k)} · ${cuenta(k)}</button>`).join("");
+  const lista = BIB.filter(t => S.filtro === "todos" || t.estado === S.filtro);
+  $("#bibRejilla").innerHTML = `<button class="tarjeta nueva" data-nuevo><b>+</b>${T("nav.nuevo")}</button>` + lista.map(t => `
+    <div class="tarjeta" data-slug="${esc(t.slug)}" tabindex="0" role="link">
+      <div class="portada" style="${t.miniatura ? `background-image:url('${esc(t.miniatura)}')` : ""}">
+        ${t.miniatura ? "" : T("bib.sin_imagenes")}
+        <span class="badge b-${t.estado}">${esc(estadoTxt(t.estado))}</span>
+        ${t.formato ? `<span class="fmt">${T(t.formato === "largo" ? "bib.largo" : "bib.short")}</span>` : ""}
+      </div>
+      <div class="cuerpo">
+        <h3>${esc(t.titulo)}</h3>
+        ${t.error ? `<span class="nota" style="color:var(--error)">${esc(t.error)}</span>` : ""}
+        <div class="meta">
+          ${t.duracion != null ? `<span>⏱ ${mmss(t.duracion)}</span>` : t.estimada ? `<span title="${T("bib.estimada")}">⏱ ~${mmss(t.estimada)}</span>` : ""}
+          ${t.escenas != null ? `<span>${Tn("bib.escenas", t.escenas)}</span>` : ""}
+          <span>${hace(t.fecha)}</span>
+          ${t.desactualizado ? `<span style="color:var(--aviso)">${T("vista.desactualizado")}</span>` : ""}
+          <details class="menu-tarjeta"><summary title="${T("bib.mas")}" aria-label="${T("bib.mas")}">⋯</summary><div>
+            <button data-menu="duplicar">${T("bib.duplicar")}</button>
+            <button data-menu="borrar" class="peligro">${T("bib.borrar")}</button>
+          </div></details>
+        </div>
+      </div>
+    </div>`).join("");
+}
+
+async function accionTarjeta(accion, slug) {
+  const t = BIB.find(x => x.slug === slug);
+  const nombre = t?.titulo || slug;
+  try {
+    if (accion === "duplicar") {
+      const { data } = await api("POST", `/api/guiones/${encodeURIComponent(slug)}/duplicar`);
+      toast(T("bib.duplicado", { slug: data.slug }), "ok");
+    }
+    if (accion === "borrar") {
+      if (!await confirmarAccion(T("bib.confirmar_borrar", { nombre }), T("bib.borrar"))) return;
+      const { data } = await api("POST", `/api/guiones/${encodeURIComponent(slug)}/borrar`);
+      BIB = BIB.filter(x => x.slug !== slug);  // fuera de la lista ya, sin esperar al siguiente sondeo
+      renderBiblioteca();
+      if (S.slug === slug) { nuevo(); history.replaceState(null, "", "#/biblioteca"); }  // estaba abierto en "Nuevo video"
+      toast(T("bib.a_papelera", { nombre }), "", { texto: T("bib.deshacer"), ms: 10000, fn: async () => {
+        try { await api("POST", `/api/papelera/${encodeURIComponent(data.papelera)}/restaurar`); toast(T("bib.restaurado"), "ok"); }
+        catch (e) { toast(e.message, "error"); }
+        cargarBiblioteca();
+      } });
+    }
+  } catch (e) { toast(e.message, "error"); }
+  cargarBiblioteca();
+}
+
+// ---------------- personajes ----------------
+const PERS = { lista: null, soloAlta: false, fuerza: { min: 0.4, max: 0.9, defecto: 0.65 }, maxFotos: 4,
+  editando: null, conservar: [], nuevas: [] };  // formulario: fotos que se quedan + archivos nuevos
+const mencionesDe = prompt => [...new Set([...(prompt || "").matchAll(/@([A-Za-z0-9][A-Za-z0-9_-]{0,31})/g)].map(m => m[1].toLowerCase()))];
+
+async function cargarPersonajes() {
+  try {
+    const d = (await api("GET", "/api/personajes")).data;
+    PERS.lista = d.personajes; PERS.soloAlta = d.solo_alta; PERS.segAlta = d.segundos_alta; PERS.fuerza = d.fuerza; PERS.maxFotos = d.max_fotos;
+  } catch (e) { toast(e.message, "error"); return; }
+  if (ruta().tab === "personajes") renderPersonajes();
+}
+
+function renderPersonajes() {
+  $("#persSoloAlta").textContent = PERS.soloAlta ? T("pers.solo_alta", { s: PERS.segAlta }) : "";
+  const lista = PERS.lista || [];
+  $("#persLista").innerHTML = lista.length ? lista.map(p => {
+    const simple = p.modalidad === "foto";
+    const t = p.trabajo, activo = t && (t.estado === "en cola" || t.estado === "corriendo");
+    const hechas = t ? t.pasos.filter(x => x.estado === "ok" || x.estado === "cache").length : 0;
+    const capa = !activo ? "" : `<div class="capa"><span class="giro"></span>${t.estado === "en cola" ? T("pers.en_cola")
+      : `${T("pers.probando", { min: Math.max(1, Math.round(((PERS.segAlta || 80) * 3 + 60) / 60))  /* + ~1 min de cargar el modelo */ })}<b class="pers-n">${Math.min(hechas + 1, 3)}/3</b>`}</div>`;
+    return `<div class="tarjeta-pers ${PERS.editando === p.nombre ? "editando" : ""}" data-nombre="${esc(p.nombre)}">
+      <div class="pers-cab"><img src="${esc(p.fotos[0]?.url || "")}" alt="">
+        <div><h3>@${esc(p.nombre)}</h3><p>${esc(p.descripcion) || "—"}</p>
+        <span class="nota">${Tn("pers.fotos_n", p.fotos.length)} · ${T("pers.fuerza_n", { f: p.fuerza.toFixed(2) })}</span></div></div>
+      <div>
+        <div class="pers-prueba">${simple ? `<img src="${esc(p.fotos[0]?.url || "")}" alt="">` : p.prueba ? `<img src="${esc(p.prueba.url)}" alt="">` : `<div class="sin">${T("pers.sin_prueba")}</div>`}${capa}</div>
+        ${!simple && p.prueba ? `<div class="pers-poses"><span>${T("pers.pose_frente")}</span><span>${T("pers.pose_perfil")}</span><span>${T("pers.pose_cuerpo")}</span></div>` : ""}
+        ${!simple && p.prueba?.vieja ? `<div class="pers-vieja">${T("pers.prueba_vieja")}</div>` : ""}
+        ${t?.estado === "error" ? `<div class="error-box" style="margin:6px 0 0">${esc(t.error)}</div>` : ""}
+      </div>
+      <div class="fila">
+        ${simple ? "" : `<button class="btn chico" data-p="probar" ${activo ? "disabled" : ""}>${T("pers.probar")}</button>`}
+        <button class="btn chico" data-p="editar" ${activo ? "disabled" : ""}>${T("pers.editar")}</button>
+        <button class="btn chico fantasma" data-p="copiar" title="${esc(T("pers.copiar", { nombre: p.nombre }))}">@</button>
+        <button class="btn chico fantasma" data-p="borrar" style="margin-left:auto" ${activo ? "disabled" : ""}>${T("pers.borrar")}</button>
+      </div></div>`;
+  }).join("") : `<div class="vacio-guion">${T("pers.vacio")}</div>`;
+}
+
+function renderFormPersonaje() {
+  const ed = PERS.editando;
+  $("#persFormTitulo").textContent = ed ? T("pers.editar_t", { nombre: ed }) : T("pers.nuevo");
+  $("#pNombre").disabled = !!ed;
+  $("#pGuardar").textContent = T(ed ? "pers.guardar" : "pers.crear");
+  $("#pCancelar").hidden = !ed;
+  const f = $("#pFuerza");
+  f.min = PERS.fuerza.min; f.max = PERS.fuerza.max;
+  $("#pFuerzaTxt").textContent = (+f.value).toFixed(2);
+  const simple = $("#pModalidad").value === "foto";
+  $("#pArchivos").multiple = !simple;
+  $("#pModalidadNota").textContent = T(simple ? "pers.foto_nota" : "pers.completo_nota");
+  renderFotosForm();
+}
+
+function maxFotosPersonaje() { return $("#pModalidad").value === "foto" ? 1 : PERS.maxFotos; }
+
+function renderFotosForm() {
+  const total = PERS.conservar.length + PERS.nuevas.length;
+  const urls = PERS.nuevas.map(f => (f._url ??= URL.createObjectURL(f)));
+  $("#pFotos").innerHTML = [
+    ...PERS.conservar.map((f, i) => `<div class="pers-foto"><img src="${esc(f.url)}" alt=""><button data-quitar="c${i}" title="${T("pers.quitar_foto")}">✕</button></div>`),
+    ...urls.map((u, i) => `<div class="pers-foto"><img src="${u}" alt=""><button data-quitar="n${i}" title="${T("pers.quitar_foto")}">✕</button></div>`),
+    total < maxFotosPersonaje() ? `<div class="pers-foto anadir" data-anadir title="${T("pers.anadir_foto")}">＋</div>` : "",
+  ].join("");
+}
+
+function limpiarFormPersonaje() {
+  PERS.editando = null; PERS.conservar = []; PERS.nuevas = [];
+  $("#pModalidad").value = "foto";
+  $("#pNombre").value = ""; $("#pDesc").value = "";
+  $("#pFuerza").value = PERS.fuerza.defecto;
+  renderFormPersonaje();
+  if (PERS.lista) renderPersonajes();
+}
+
+function editarPersonaje(nombre) {
+  const p = PERS.lista.find(x => x.nombre === nombre);
+  if (!p) return;
+  $("#pModalidad").value = p.modalidad || "completo";
+  PERS.editando = nombre; PERS.conservar = p.fotos.map(f => ({ ...f })); PERS.nuevas = [];
+  $("#pNombre").value = p.nombre; $("#pDesc").value = p.descripcion; $("#pFuerza").value = p.fuerza;
+  renderFormPersonaje(); renderPersonajes();
+  $("#persForm").scrollIntoView({ block: "nearest", behavior: "smooth" });
+}
+
+async function guardarPersonaje() {
+  const nombre = $("#pNombre").value.trim().toLowerCase(), ed = PERS.editando;
+  if (!ed && !/^[a-z0-9][a-z0-9_-]{0,31}$/.test(nombre)) { toast(T("pers.falta_nombre"), "error"); $("#pNombre").focus(); return; }
+  if (!PERS.conservar.length && !PERS.nuevas.length) { toast(T("pers.falta_foto"), "error"); return; }
+  if ($("#pModalidad").value === "foto" && PERS.conservar.length + PERS.nuevas.length !== 1) {
+    toast(T("pers.una_foto_error"), "error"); return;
+  }
+  const fd = new FormData();
+  fd.append("modalidad", $("#pModalidad").value);
+  if (!ed) fd.append("nombre", nombre);
+  fd.append("descripcion", $("#pDesc").value.trim());
+  fd.append("fuerza", $("#pFuerza").value);
+  if (ed) fd.append("conservar", JSON.stringify(PERS.conservar.map(f => f.nombre)));
+  PERS.nuevas.forEach(f => fd.append("fotos", f));
+  const b = $("#pGuardar");
+  b.disabled = true;
+  try {
+    const r = await fetch(ed ? `/api/personajes/${encodeURIComponent(ed)}` : "/api/personajes",
+      { method: ed ? "PUT" : "POST", body: fd, headers: cabeceras() });
+    const data = await r.json().catch(() => null);
+    if (!r.ok) throw new Error(errorHttp(data, r.status));
+    toast(ed ? T("pers.guardado") : T("pers.creado", { nombre: data.nombre }), "ok");
+    limpiarFormPersonaje();
+    await cargarPersonajes();
+  } catch (e) { toast(e.message, "error"); }
+  finally { b.disabled = false; }
+}
+
+async function accionPersonaje(accion, nombre) {
+  try {
+    if (accion === "probar") { pedirPermisoAvisos(); await api("POST", `/api/personajes/${encodeURIComponent(nombre)}/probar`); await cargarPersonajes(); programarPoll(0); }
+    if (accion === "editar") editarPersonaje(nombre);
+    if (accion === "copiar") {
+      await navigator.clipboard?.writeText(`@${nombre}`).catch(() => {});
+      toast(T("pers.copiado", { nombre }), "ok");
+    }
+    if (accion === "borrar") {
+      if (!await confirmarAccion(T("pers.confirmar_borrar", { nombre }), T("pers.borrar"))) return;
+      await api("DELETE", `/api/personajes/${encodeURIComponent(nombre)}`);
+      if (PERS.editando === nombre) limpiarFormPersonaje();
+      toast(T("pers.borrado", { nombre }));
+      await cargarPersonajes();
+    }
+  } catch (e) { toast(e.message, "error"); }
+}
+
+// ---------------- ajustes ----------------
+async function renderAjustes(marcaPendiente = null) {
+  const a = S.ajustes;
+  $("#aMotor").value = a.motor_voz || "edge";
+  renderMotor();
+  $("#aFormato").value = a.formato;
+  $("#aEstilo").value = a.estilo_visual;
+  $("#aCierreEs").value = a.frase_cierre?.es || "";
+  $("#aCierreEn").value = a.frase_cierre?.en || "";
+  $("#aRate").value = a.rate;
+  $("#aCalidad").value = a.calidad;
+  $("#aSubs").checked = a.subtitulos;
+  $("#aDemo").checked = a.demo;
+  $("#aMarca").checked = marcaPendiente?.activa ?? a.marca_agua;
+  $("#aMarca").disabled = !a.logo_marca;
+  $("#aLogoPreview").hidden = !a.logo_marca;
+  if (a.logo_marca) $("#aLogoPreview").src = a.logo_marca;
+  $("#aPortada").checked = a.portada;
+  $("#aCierreTarjeta").checked = a.cierre_tarjeta !== false;
+  $("#aCierreNombre").value = a.cierre_nombre ?? "";
+  $("#aCierreNombreCampo").hidden = !$("#aCierreTarjeta").checked;
+  $("#aIA").value = a.proveedor_ia;
+  $("#aAnthModelo").value = a.anthropic_modelo || "";
+  $("#aOpenaiModelo").value = a.openai_modelo || "";
+  renderIA();
+  const cs = $("#aSubs2");
+  if (SUBS && !cs.firstElementChild) {
+    cs.innerHTML = `<div class="subs-cols">${htmlControlesSubs(true)}</div>`;
+    const el = $(".subs-ctl", cs);
+    // en Ajustes la vista previa va en la segunda columna, al lado de los controles
+    const prev = $("[data-previewcaja]", el);
+    $(".subs-cols", cs).append(prev);
+    conectarSubs(el, () => {}, v => ({ slug: S.slug || undefined, estilo_global: v, estilo_guion: {},
+      marca_agua: $("#aMarca").checked, marca_global: leerMarca($("#aMarcaCtl .marca-ctl")), marca_guion: {} }), prev);
+  }
+  if (SUBS) ponerSubs($(".subs-ctl", cs), a.estilo_subtitulos || {});
+  renderMarcaAjustes(marcaPendiente?.estilo);
+  resumenSetupAjustes();
+  renderEspacio();
+  try {
+    const s = (await api("GET", "/api/sistema")).data;
+    const g = s.gpu;
+    $("#sistema").innerHTML = `
+      <div class="dato"><span>${T("sis.version")}</span><span>${esc(S.ajustes.version || "")}</span></div>
+      <div class="dato"><span>GPU</span><span>${g ? esc(g.nombre) : T("sis.no_detectada")}</span></div>
+      ${g ? `<div class="dato" style="display:block"><div style="display:flex;justify-content:space-between"><span style="color:var(--texto-2)">${T("sis.vram")}</span><span>${(g.vram_usada / 1024).toFixed(1)} / ${(g.vram_total / 1024).toFixed(1)} GB</span></div>
+        <div class="vram"><i style="width:${Math.round(100 * g.vram_usada / g.vram_total)}%"></i></div></div>` : ""}
+      <div class="dato"><span>PyTorch</span><span>${T(s.torch ? "sis.torch_si" : "sis.torch_no")}</span></div>
+      <div class="dato"><span>${T("sis.modelo")}</span><span>${esc(s.modelo_cargado || T("sis.ninguno"))}</span></div>
+      <div class="dato"><span>${T("sis.cola")}</span><span>${s.cola.length}</span></div>
+`;
+  } catch (e) { $("#sistema").textContent = e.message; }
+}
+
+function peso(b) {
+  return b >= 1e9 ? `${(b / 1e9).toFixed(1)} GB` : b >= 1e6 ? `${(b / 1e6).toFixed(0)} MB` : `${Math.round(b / 1e3)} KB`;
+}
+async function renderEspacio(datos) {
+  try {
+    const e = datos || (await api("GET", "/api/espacio")).data;
+    $("#espacio").innerHTML = `
+      <div class="dato"><span>salida/</span><span>${peso(e.salida)}</span></div>
+      <div class="dato"><span>papelera/</span><span>${peso(e.papelera)}</span></div>
+      <div class="dato"><span title="${esc(e.ruta_modelos)}">${T("esp.modelos")}</span><span>${peso(e.modelos)}</span></div>
+      <div class="dato"><span>${T("esp.liberable")}</span><span><b>${peso(e.liberable)}</b></span></div>`;
+    const b = $("#bLimpiar");
+    b.disabled = e.liberable < 1e5;
+    b.textContent = e.liberable < 1e5 ? T("esp.nada") : T("esp.limpiar_n", { peso: peso(e.liberable) });
+    return e;
+  } catch (err) { $("#espacio").textContent = err.message; }
+}
+async function limpiarDisco() {
+  const e = await renderEspacio();
+  if (!e || !await confirmarAccion(T("esp.confirmar", { peso: peso(e.liberable) }), T("dlg.limpiar"))) return;
+  try {
+    const { data } = await api("POST", "/api/espacio/limpiar");
+    renderEspacio(data);
+    if (data.errores.length) toast(T("esp.liberados_err", { peso: peso(data.liberado), errores: data.errores.join(" · ") }), "error");
+    else toast(T("esp.liberados", { peso: peso(data.liberado) }), "ok");
+  } catch (err) { toast(err.message, "error"); }
+}
+
+/** Sección "Proveedor de IA" de Ajustes. Las claves nunca llegan completas: solo "…abcd". */
+const IA_QUITAR = {};
+function renderIA() {
+  const ia = S.ajustes.ia || {}, prov = $("#aIA").value;
+  $$("[data-ia]").forEach(el => { el.hidden = el.dataset.ia !== prov; });
+  $("#aIAClaudeEstado").textContent = T(ia.claude_instalado ? "aj.ia_claude_si" : "aj.ia_claude_no");
+  for (const p of ["anthropic", "openai"]) {
+    const k = ia.claves?.[p], quitar = IA_QUITAR[p];
+    $(`[data-clave-estado="${p}"]`).textContent = quitar ? T("aj.ia_se_quita")
+      : !k ? T("aj.ia_sin_clave") : ia.de_entorno?.[p] ? T("aj.ia_clave_entorno", { k }) : T("aj.ia_clave_guardada", { k });
+    $(`[data-quitar-clave="${p}"]`).hidden = !k || quitar || ia.de_entorno?.[p];
+  }
+  $("#aAnthKey").placeholder = $("#aOpenaiKey").placeholder = T("aj.ia_clave_ph");
+}
+
+/** Ajustes > motor de voz: la lista de voces en español es la del motor elegido. */
+function renderMotor() {
+  const a = S.ajustes, motor = $("#aMotor").value;
+  $('#aMotor option[value="kokoro"]').disabled = !a.kokoro_instalado;
+  const actual = $("#aVoz").dataset.motor === motor && $("#aVoz").value ? $("#aVoz").value : (motor === "kokoro" ? a.voz_kokoro : a.voz);
+  llenarVoces($("#aVoz"), actual, "es", motor);
+  $("#aVoz").dataset.motor = motor;
+  $("#aMotorNota").textContent = T(motor === "kokoro" ? "aj.motor_kokoro_d" : "aj.motor_edge_d")
+    + (a.kokoro_instalado ? "" : " " + T("aj.motor_kokoro_falta"));
+}
+
+async function guardarAjustes() {
+  const motor = $("#aMotor").value;
+  const nuevos = {
+    motor_voz: motor, [motor === "kokoro" ? "voz_kokoro" : "voz"]: $("#aVoz").value, formato: $("#aFormato").value, estilo_visual: $("#aEstilo").value.trim(),
+    frase_cierre: { es: $("#aCierreEs").value.trim(), en: $("#aCierreEn").value.trim() },
+    rate: $("#aRate").value.trim(), calidad: $("#aCalidad").value,
+    subtitulos: $("#aSubs").checked, marca_agua: $("#aMarca").checked, demo: $("#aDemo").checked,
+    portada: $("#aPortada").checked,
+    cierre_tarjeta: $("#aCierreTarjeta").checked, cierre_nombre: $("#aCierreNombre").value.trim(),
+    estilo_subtitulos: SUBS ? leerSubs($("#aSubs2 .subs-ctl")) : S.ajustes.estilo_subtitulos,
+    estilo_marca: SUBS ? leerMarca($("#aMarcaCtl .marca-ctl")) : S.ajustes.estilo_marca,
+    proveedor_ia: $("#aIA").value,
+    anthropic_modelo: $("#aAnthModelo").value.trim(), openai_modelo: $("#aOpenaiModelo").value.trim(),
+  };
+  // una clave solo viaja si la escribiste (o vacía si pediste quitarla); si no, se queda la guardada
+  for (const [p, id] of [["anthropic", "#aAnthKey"], ["openai", "#aOpenaiKey"]]) {
+    const v = $(id).value.trim();
+    if (v) nuevos[`${p}_api_key`] = v; else if (IA_QUITAR[p]) nuevos[`${p}_api_key`] = "";
+  }
+  try {
+    S.ajustes = (await api("PUT", "/api/ajustes", nuevos)).data;
+    $("#aAnthKey").value = $("#aOpenaiKey").value = "";
+    for (const k in IA_QUITAR) delete IA_QUITAR[k];
+    renderIA();
+    botonesEscritura();
+    toast(T("aj.guardados"), "ok");
+  } catch (e) { toast(e.message, "error"); }
+}
+
+// ---------------- avisos al terminar ----------------
+let VISTOS = null;  // ids de trabajos ya avisados; los que ya habían acabado al abrir la app no se avisan
+function avisarTerminados(lista) {
+  if (!VISTOS) { VISTOS = new Set(lista.map(t => t.id)); return; }
+  for (const t of lista) {
+    if (VISTOS.has(t.id)) continue;
+    VISTOS.add(t.id);
+    const ok = t.estado === "listo", nombre = t.tipo === "personaje" ? `@${t.titulo}` : `«${t.titulo}»`;
+    const msg = T(`fin.${t.tipo}_${ok ? "ok" : "error"}`, { nombre });
+    const ver = t.tipo === "personaje" ? () => ir("personajes") : () => ir("nuevo", t.slug);
+    toast(msg, ok ? "ok" : "error", { texto: T("fin.ver"), fn: ver, ms: 20000 });
+    if (document.hidden && "Notification" in window && Notification.permission === "granted")
+      new Notification("Dcrypto Studio", { body: msg, icon: "/logo/logo_dcrypto_studio_256.png" });
+  }
+}
+/** Al lanzar algo largo, pedir permiso (una vez) para avisar también si la ventana está en segundo plano. */
+function pedirPermisoAvisos() {
+  if ("Notification" in window && Notification.permission === "default") Notification.requestPermission().catch(() => {});
+}
+
+// ---------------- sondeo ----------------
+function programarPoll(ms) { clearTimeout(S.tPoll); if (!S.cerrada) S.tPoll = setTimeout(poll, ms); }
+
+async function poll() {
+  const { tab } = ruta();
+  let activo = false;
+  try {
+    if (tab === "nuevo" && S.slug) {
+      const { data } = await api("GET", `/api/guiones/${encodeURIComponent(S.slug)}`);
+      const editando = S.sucio || document.activeElement?.closest?.("#tab-nuevo .panel.guion, #tab-nuevo .panel.idea");
+      if (data.mtime !== S.mtime && !editando && data.slug === S.slug) {
+        // cambió el archivo por fuera (Claude Code escribió el guion, o un editor)
+        const antes = S.doc.escenas.length;
+        cargarDetalle(data, true);
+        toast(T(antes ? "guion.actualizado" : "guion.llego"), "ok");
+      } else if (data.slug === S.slug) {
+        S.det = { ...data, doc: S.det.doc };
+        actualizarEstados();
+      }
+      activo = trabajosActivos().length > 0;
+    } else if (tab === "biblioteca") {
+      await cargarBiblioteca();
+      activo = BIB.some(t => t.estado === "generando");
+    } else if (tab === "estudio") {
+      await cargarEstudio();
+      activo = ESTUDIO.imagenes.some(i => ["en cola", "corriendo"].includes(i.estado));
+    } else if (tab === "personajes") {
+      const antes = JSON.stringify((PERS.lista || []).map(p => [p.trabajo?.estado, p.prueba?.url]));
+      await cargarPersonajes();
+      activo = (PERS.lista || []).some(p => p.trabajo && (p.trabajo.estado === "en cola" || p.trabajo.estado === "corriendo"));
+      if (antes === JSON.stringify((PERS.lista || []).map(p => [p.trabajo?.estado, p.prueba?.url]))) { /* sin cambios */ }
+    }
+    const s = (await api("GET", "/api/sistema")).data;
+    avisarTerminados(s.terminados || []);
+    const cambio = !!S.descarga !== !!s.descarga || S.descarga?.gb !== s.descarga?.gb;
+    S.descarga = s.descarga;
+    if (cambio && S.slug) actualizarEstados();
+    const cg = $("#colaGlobal");
+    cg.hidden = !s.cola.length;
+    cg.innerHTML = s.cola.length ? `<span class="giro"></span><span class="txt">${s.descarga
+      ? T("cola.descargando", { gb: s.descarga.gb.toFixed(1), total: s.descarga.total }) : T("cola.n", { n: s.cola.length })}</span>` : "";
+    activo ||= s.cola.length > 0;
+  } catch (e) {
+    // el guion abierto ya no existe (se movió a la papelera desde otra pestaña o a mano): se suelta
+    if (e?.status === 404 && tab === "nuevo" && S.slug) { toast(e.message, "error"); nuevo(); ir("nuevo"); }
+    /* si no: servidor caído o reiniciando, se reintenta */
+  }
+  programarPoll(activo ? 1000 : 4000);
+}
+
+// ---------------- eventos ----------------
+function conectar() {
+  conectarEstudio();
+  $$("nav button").forEach(b => b.onclick = async () => {
+    if (b.dataset.tab !== "nuevo") return ir(b.dataset.tab);
+    if (!S.slug) return ir("nuevo");
+    // con un guion abierto: empezar otro (el actual queda en la Biblioteca) o volver al abierto
+    const decision = await elegirAccion(T("nav.confirmar_nuevo"), { aceptar:T("nav.nuevo"), alternativa:T("dlg.volver_actual") });
+    if (decision === "aceptar") { nuevo(); ir("nuevo"); $("#fTema").focus(); }
+    else if (decision === "alternativa") ir("nuevo", S.slug);
+  });
+  window.addEventListener("hashchange", alNavegar);
+
+  // idea
+  $("#fTema").oninput = e => cambiarIdea("tema", e.target.value);
+  $("#fTitulo").oninput = e => { cambiarIdea("titulo", e.target.value); const t = $("#gTitulo"); if (t) t.textContent = e.target.value || S.doc?.tema || S.slug; };
+  $("#fFormato").onclick = e => {
+    const b = e.target.closest("button"); if (!b) return;
+    $$("#fFormato button").forEach(x => x.classList.toggle("activa", x === b));
+    cambiarIdea("formato", b.dataset.v);
+  };
+  $("#fVoz").onchange = e => { cambiarIdea("motor_voz", motorGuion(datosIdea())); cambiarIdea("voz", e.target.value); $("#fVozAviso").hidden = true; };
+  $("#fIdioma").onchange = e => {
+    const d = datosIdea(), motor = motorGuion(d), idioma = e.target.value, voz = vozDefecto(motor, idioma);
+    cambiarIdea("idioma", idioma);
+    cambiarIdea("motor_voz", motor);
+    cambiarIdea("voz", voz);
+    llenarVoces($("#fVoz"), voz, idioma, motor);
+    renderIdea();
+  };
+  $("#bTraducir").onclick = () => traducir();
+  $("#fPropio").onchange = e => { const f = e.target.files[0]; e.target.value = ""; subirPropio(f, S.propioIdx); };
+  $("#fPortada").onchange = e => cambiarIdea("portada", e.target.value === "" ? null : e.target.value === "si");
+  $("#fEstilo").oninput = e => { cambiarIdea("estilo_visual", e.target.value); $$("#fPresets .chip").forEach(c => c.classList.toggle("activa", c.dataset.v === e.target.value)); };
+  $("#fPresets").onclick = e => {
+    const c = e.target.closest(".chip"); if (!c) return;
+    $("#fEstilo").value = c.dataset.v;
+    $$("#fPresets .chip").forEach(x => x.classList.toggle("activa", x === c));
+    cambiarIdea("estilo_visual", c.dataset.v);
+  };
+  $("#fMusica").onchange = e => {
+    cambiarIdea("musica", e.target.value);
+    if (e.target.value && datosIdea().volumen_musica == null) cambiarIdea("volumen_musica", 0.15);
+    $("#fVolCaja").hidden = !e.target.value;
+    const m = moodDe(e.target.value);
+    if (m) $("#fMoodSubir").value = m;
+    renderMusicaInfo();
+  };
+  $("#bPlayPista").onclick = tocarPista;
+  $("#bStopPista").onclick = pararAudio;
+  $("#bSubir").onclick = () => $("#fArchivos").click();
+  $("#fArchivos").onchange = e => subirMusica([...e.target.files]);
+  $("#fMoodSubir").onchange = e => { S.moodSubir = e.target.value; };
+  $("#bProbar").onclick = () => generar("prueba");
+  $("#fMarcaModo").onclick = e => {
+    const b = e.target.closest("button"); if (!b) return;
+    const d = datosIdea();
+    if (b.dataset.v === "propio") d.marca = { ...SUBS.marca.defecto, ...(S.ajustes.estilo_marca || {}), ...(d.marca || {}) };
+    else if (b.dataset.v === "ninguna") d.marca = false;
+    else delete d.marca;
+    if (S.slug) guardarLuego();
+    renderMarcaGuion();
+    refrescarPreviewGuion();
+  };
+  $("#fCierreModo").onclick = e => {
+    const b = e.target.closest("button"); if (!b) return;
+    const d = datosIdea(); if (!d) return;
+    if (b.dataset.v === "propio") {
+      // sin imagen todavía: se elige el archivo y el modo cambia cuando termina de subir
+      if (d.cierre && !["global", "ninguno"].includes(d.cierre)) return;
+      if (!S.slug) { toast(T("cierre.sin_guardar"), "error"); return; }
+      $("#fCierre").click();
+      return;
+    }
+    if (b.dataset.v === "ninguno") d.cierre = "ninguno"; else delete d.cierre;
+    if (S.slug) guardarLuego();
+    renderCierreGuion();
+  };
+  $("#bCierreSubir").onclick = () => $("#fCierre").click();
+  $("#fCierre").onchange = e => { const f = e.target.files[0]; e.target.value = ""; subirCierre(f); };
+  $("#aCierreTarjeta").onchange = e => { $("#aCierreNombreCampo").hidden = !e.target.checked; };
+  $("#aMarca").onchange = e => { $("#aMarcaCtl").hidden = !e.target.checked; refrescarPreviewAjustes(); };
+  $("#aLogo").onchange = async e => {
+    const archivo = e.target.files[0];
+    if (!archivo) return;
+    e.target.disabled = true;
+    try {
+      const fd = new FormData(); fd.append("archivo", archivo);
+      const r = await fetch("/api/marca/logo", { method: "POST", body: fd, headers: cabeceras() });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.detail || T("marca.error_guardar"));
+      S.ajustes.logo_marca = data.url;
+      $("#aLogoPreview").src = data.url; $("#aLogoPreview").hidden = false;
+      $("#aMarca").disabled = false;
+      refrescarPreviewAjustes();
+    } catch (err) { toast(err.message, "error"); }
+    finally { e.target.disabled = false; e.target.value = ""; }
+  };
+  $("#fSubsModo").onclick = e => {
+    const b = e.target.closest("button"); if (!b) return;
+    const d = datosIdea();
+    if (b.dataset.v === "propio") d.subtitulos = { ...SUBS.defecto, ...(S.ajustes.estilo_subtitulos || {}), ...(d.subtitulos || {}) };
+    else delete d.subtitulos;
+    if (S.slug) guardarLuego();
+    renderSubsGuion();
+  };
+  $("#fVol").oninput = e => { cambiarIdea("volumen_musica", +e.target.value); $("#fVolTxt").textContent = `${Math.round(e.target.value * 100)}%`; };
+  $("#fMaterial").oninput = e => cambiarIdea("material", e.target.value);
+  $("#bEscribir").onclick = () => escribirGuion(false);
+  $("#bReescribir").onclick = () => escribirGuion(true);
+  $("#fNota").onkeydown = e => { if (e.key === "Enter") escribirGuion(true); };
+  $("#bPegar").onclick = () => abrirPegar();
+  $("#bPromptCopiar").onclick = () => copiarDe($("#promptTexto"), T("esc.manual.copiado"));
+  $("#bPromptPegar").onclick = () => { $("#dlgPrompt").close(); abrirPegar(); };
+  $("#bTrCopiar").onclick = () => copiarDe($("#trOrigen"), T("tr.manual.copiado", { n: S.doc?.escenas?.length || 0 }));
+  $("#formTraducir").addEventListener("submit", e => {
+    if (e.submitter?.value !== "ok") return;  // Cancelar cierra el diálogo
+    e.preventDefault();
+    enviarTraduccion();
+  });
+  // el enlace a Ajustes dentro de un diálogo cierra el diálogo
+  for (const id of ["#dlgPrompt", "#dlgTraducir"]) $(id).addEventListener("click", e => { if (e.target.closest("a")) $(id).close(); });
+  $("#formPegar").addEventListener("submit", e => {
+    if (e.submitter?.value !== "ok") return;  // Cancelar cierra el diálogo
+    e.preventDefault();
+    enviarPegado();
+  });
+  $("#guionCuerpo").addEventListener("click", e => { if (e.target.closest("#bCancelarEsc")) cancelarEscritura(); });
+  $("#bBlanco").onclick = empezarEnBlanco;
+  $("#bNuevo").onclick = () => ir("nuevo");
+
+  // guion: delegación de eventos sobre las tarjetas
+  const g = $("#guionCuerpo");
+  g.addEventListener("focusin", e => {
+    const ta = e.target.closest("textarea[data-campo]"); if (!ta) return;
+    S.foco = { i: +ta.closest(".escena").dataset.i, campo: ta.dataset.campo, valor: ta.value };
+  });
+  g.addEventListener("input", e => {
+    const inicio = e.target.closest('input[data-inicio-clip]');
+    if (inicio) {
+      const i = +inicio.closest('.escena').dataset.i, valor = Math.round(inicio.valueAsNumber * 1000) / 1000;
+      const dur = S.det.escenas[i]?.media?.duracion;
+      if (!Number.isFinite(valor) || valor < 0 || (Number.isFinite(dur) && valor >= dur)) {
+        inicio.setCustomValidity(T('clip.inicio_invalido')); return;
+      }
+      inicio.setCustomValidity('');
+      S.doc.escenas[i].inicio_clip = Math.round(valor * 1000) / 1000;
+      guardarLuego(); return;
+    }
+    const pz = e.target.closest("input[data-pausa]");
+    if (pz) {
+      const i = +pz.closest(".escena").dataset.i, v = Math.min(10, Math.max(0, Math.round((+pz.value || 0) * 10) / 10));
+      if (v) S.doc.escenas[i].pausa = v; else delete S.doc.escenas[i].pausa;
+      guardarLuego();
+      return;
+    }
+    const ta = e.target.closest("textarea[data-campo]"); if (!ta) return;
+    const i = +ta.closest(".escena").dataset.i;
+    S.doc.escenas[i][ta.dataset.campo] = ta.value;
+    if (ta.dataset.campo === "prompt" && S.doc.escenas[i].prompt_sugerido) {  // ya lo editaste: deja de ser sugerido
+      delete S.doc.escenas[i].prompt_sugerido;
+      $("[data-sugerido]", ta.closest(".escena")).hidden = true;
+    }
+    autoAlto(ta);
+    guardarLuego();
+    actualizarEstados();
+  });
+  g.addEventListener("focusout", e => {
+    const inicio = e.target.closest('input[data-inicio-clip]');
+    if (inicio && !inicio.checkValidity()) {
+      const i = +inicio.closest('.escena').dataset.i;
+      inicio.value = S.doc.escenas[i]?.inicio_clip || 0;
+      inicio.setCustomValidity(''); toast(T('clip.inicio_invalido'), 'error'); return;
+    }
+    const ta = e.target.closest("textarea[data-campo]"); if (!ta) return;
+    const i = +ta.closest(".escena").dataset.i, campo = ta.dataset.campo;
+    if (S.foco.i !== i || S.foco.campo !== campo || S.foco.valor.trim() === ta.value.trim() || !ta.value.trim()) { guardar(); return; }
+    if (campo === "prompt" && S.doc.escenas[i].media) { guardar(); return; }  // usa su archivo propio
+    // texto editado -> solo esa voz; prompt editado -> solo esa imagen (el pipeline cachea por hash)
+    if (campo === "prompt") S.doc.escenas[i].semilla = 0;
+    S.sucio = true;
+    generar(campo === "texto" ? "voz" : "imagen", i + 1);
+  });
+  g.addEventListener("click", e => {
+    const img = e.target.closest(".mini img");
+    if (img?.dataset.clip) {
+      const i = +img.closest('.escena').dataset.i;
+      return verClip(img.dataset.clip, S.doc.escenas[i]?.inicio_clip || 0);
+    }
+    if (img) return verImagen(img.src);
+    const b = e.target.closest("[data-accion]"); if (!b) return;
+    const card = b.closest(".escena");
+    accionEscena(b.dataset.accion, card ? +card.dataset.i : +b.dataset.i);
+  });
+
+  // miniatura
+  $("#vistaCuerpo").addEventListener("input", e => {
+    if (e.target.id !== "fTituloMini") return;
+    S.doc.titulo_miniatura = e.target.value;
+    guardarLuego();
+    renderMiniatura(false);
+  });
+  $("#vistaCuerpo").addEventListener("change", e => {
+    if (e.target.id !== "fMiniEscena") return;
+    S.doc.miniatura_escena = +e.target.value;
+    S.sucio = true;
+    generar("miniatura");  // cambiar la imagen base regenera al momento (es rápido)
+  });
+
+  // vista previa
+  $("#vistaCuerpo").addEventListener("click", async e => {
+    if (e.target.closest("#bMiniatura")) generar("miniatura");
+    const im = e.target.closest("#miniPrev img");
+    if (im) verImagen(im.src);
+    if (e.target.closest("#bGenerar")) { pedirPermisoAvisos(); generar("video"); }
+    if (e.target.closest("#bOtroVideo")) otroVideo();
+    if (e.target.closest("#bAbrir")) {
+      try { await api("POST", `/api/guiones/${S.slug}/abrir`); toast(T("vista.carpeta_abierta")); }
+      catch (err) { toast(err.message, "error"); }
+    }
+  });
+
+  // biblioteca
+  $("#bibFiltros").onclick = e => { const c = e.target.closest("[data-filtro]"); if (c) { S.filtro = c.dataset.filtro; renderBiblioteca(); } };
+  $("#bibRejilla").onclick = e => {
+    const menu = e.target.closest(".menu-tarjeta");
+    if (menu) {
+      const b = e.target.closest("[data-menu]");
+      if (b) { menu.open = false; accionTarjeta(b.dataset.menu, menu.closest(".tarjeta").dataset.slug); }
+      else $$(".menu-tarjeta[open]").forEach(m => m !== menu && (m.open = false));  // un menú abierto a la vez
+      return;
+    }
+    const t = e.target.closest(".tarjeta"); if (!t) return;
+    if (t.dataset.nuevo !== undefined) { nuevo(); ir("nuevo"); }
+    else ir("nuevo", t.dataset.slug);
+  };
+  $("#bibRejilla").onkeydown = e => {
+    if (e.key === "Enter" && e.target.matches(".tarjeta[data-slug]")) ir("nuevo", e.target.dataset.slug);
+  };
+  document.addEventListener("click", e => {
+    if (!e.target.closest(".menu-tarjeta")) $$(".menu-tarjeta[open]").forEach(m => m.open = false);
+    $$(".menu-img[open]").forEach(m => m !== e.target.closest(".menu-img") && (m.open = false));
+  });
+
+  // ajustes
+  $("#bGuardarAjustes").onclick = guardarAjustes;
+  $$("[data-guardar-ajustes]").forEach(b => b.onclick = guardarAjustes);
+  $("#aIA").onchange = renderIA;
+  $("#aMotor").onchange = renderMotor;
+  $$("[data-quitar-clave]").forEach(b => b.onclick = e => { e.preventDefault(); IA_QUITAR[b.dataset.quitarClave] = true; renderIA(); });
+  $("#bLimpiar").onclick = limpiarDisco;
+  $("#bLiberar").onclick = async () => { await api("POST", "/api/sistema/liberar"); toast(T("aj.liberando")); setTimeout(renderAjustes, 1500); };
+
+  // configuración inicial
+  $("#tab-setup").addEventListener("click", e => {
+    const b = e.target.closest("[data-setup]");
+    if (b && !b.disabled) accionSetup(b.dataset.setup);
+  });
+  $("#bAbrirSetup").onclick = () => ir("setup");
+  $("#bApoyar").onclick = abrirApoyo;
+  $("#bCerrarApp").onclick = $("#bCerrarAppAj").onclick = cerrarApp;
+
+  // idioma de la interfaz
+  $("#selIdioma").onchange = e => cambiarIdiomaUI(e.target.value);
+
+  // ayuda: el índice abre la sección y baja hasta ella (sin tocar el hash: lo usa la navegación)
+  $("#ayudaIndice").onclick = e => {
+    const id = e.target.closest("[data-ir]")?.dataset.ir;
+    if (!id) return;
+    const d = $(`#ayuda-${id}`);
+    d.open = true;
+    d.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+  $("#ayudaSecciones").addEventListener("toggle", botonAyudaTodo, true);
+  $("#ayudaSecciones").onclick = e => { const img = e.target.closest(".ayuda-paso img"); if (img) verImagen(img.src); };
+  $("#bAyudaTodo").onclick = () => {
+    const abrir = !$$("#ayudaSecciones details").every(d => d.open);
+    $$("#ayudaSecciones details").forEach(d => { d.open = abrir; });
+  };
+
+  // personajes
+  $("#pModalidad").onchange = renderFormPersonaje;
+  $("#pFuerza").oninput = e => { $("#pFuerzaTxt").textContent = (+e.target.value).toFixed(2); };
+  $("#pNombre").oninput = e => { const v = e.target.value.toLowerCase().replace(/\s+/g, ""); if (v !== e.target.value) e.target.value = v; };
+  $("#pGuardar").onclick = guardarPersonaje;
+  $("#pCancelar").onclick = limpiarFormPersonaje;
+  $("#pFotos").onclick = e => {
+    if (e.target.closest("[data-anadir]")) return $("#pArchivos").click();
+    const q = e.target.closest("[data-quitar]")?.dataset.quitar;
+    if (!q) return;
+    if (q[0] === "c") PERS.conservar.splice(+q.slice(1), 1); else PERS.nuevas.splice(+q.slice(1), 1);
+    renderFotosForm();
+  };
+  $("#pArchivos").onchange = e => {
+    const libres = Math.max(0, maxFotosPersonaje() - PERS.conservar.length - PERS.nuevas.length), fs = [...e.target.files];
+    if (fs.length > libres) toast(T("pers.max_fotos", { max: maxFotosPersonaje() }), "error");
+    PERS.nuevas.push(...fs.slice(0, libres));
+    e.target.value = "";
+    renderFotosForm();
+  };
+  $("#persLista").onclick = e => {
+    const img = e.target.closest(".pers-prueba img");
+    if (img) return verImagen(img.src);
+    const b = e.target.closest("[data-p]");
+    if (b) accionPersonaje(b.dataset.p, b.closest(".tarjeta-pers").dataset.nombre);
+  };
+
+  window.addEventListener("beforeunload", e => { if (S.sucio) { guardar(); e.preventDefault(); } });
+}
+
+function verImagen(src) {
+  const v = Object.assign(document.createElement("div"), { className: "visor", innerHTML: `<img src="${esc(src)}" alt="">` });
+  v.onclick = () => v.remove();
+  document.body.append(v);
+}
+
+function renderTodo() { renderIdea(); renderGuion(); renderVista(); }
+
+// ---------------- cerrar la app ----------------
+/** "Cerrar Dcrypto Studio": con trabajos en marcha pide confirmación; luego el servidor suelta los modelos y
+ *  se cierra (con el lanzador, también el icono de la bandeja y ffmpeg). Queda una pantalla final. */
+async function cerrarApp() {
+  if (S.cerrando || S.cerrada) return;
+  S.cerrando = true;
+  try {
+    let r = await api("POST", "/api/cerrar", {});
+    if (r.status === 409) {
+      const n = r.data?.pendientes?.length || 0;
+      if (!(await confirmarAccion(T("cerrar.confirmar", { n }), T("cerrar.si")))) return;
+      r = await api("POST", "/api/cerrar", { forzar: true });
+      if (r.status === 409) throw new Error(errorHttp(r.data, 409));
+    }
+    pantallaCerrada();
+  } catch (err) {
+    // el servidor pudo cerrarse antes de responder: si ya no contesta (fallo de red), está cerrado
+    if (err instanceof TypeError) pantallaCerrada(); else toast(err.message, "error");
+  } finally { S.cerrando = false; }
+}
+
+function pantallaCerrada() {
+  S.cerrada = true;
+  clearTimeout(S.tPoll);
+  document.title = T("cerrar.titulo");
+  document.body.innerHTML = `<div class="app-cerrada"><div>
+    <h1>${esc(T("cerrar.titulo"))}</h1><p>${esc(T("cerrar.pestana"))}</p></div></div>`;
+}
+
+// ---------------- versión nueva ----------------
+const CLAVE_VERSION_DESCARTADA = "dcrypto.version_descartada";
+/** Aviso discreto si el version.json de la web anuncia una versión más nueva. El servidor hace la consulta
+ *  (sin datos del usuario ni del equipo); sin internet no hay aviso ni error. */
+async function revisarVersionNueva() {
+  let nueva;
+  try { nueva = (await api("GET", "/api/version/nueva")).data?.nueva; } catch { return; }
+  if (!nueva?.version || !/^https:\/\//.test(nueva.url || "")) return;
+  let descartada = null;
+  try { descartada = localStorage.getItem(CLAVE_VERSION_DESCARTADA); } catch { /* sin almacenamiento: se muestra */ }
+  if (descartada === nueva.version) return;
+  S.versionNueva = nueva;
+  renderAvisoVersion();
+}
+
+function renderAvisoVersion() {
+  const caja = $("#avisoVersion"), v = S.versionNueva;
+  if (!caja) return;
+  caja.hidden = !v;
+  if (!v) { caja.innerHTML = ""; return; }
+  const notas = v.notas?.[LANG] || v.notas?.es || "";
+  caja.innerHTML = `<span>${esc(T("version.nueva", { version: v.version }))}</span>
+    <a href="${esc(v.url)}" target="_blank" rel="noopener noreferrer">${esc(T("version.descargar"))} →</a>
+    ${notas ? `<span class="notas">${esc(notas)}</span>` : ""}
+    <button type="button" data-descartar aria-label="${esc(T("version.descartar"))}" title="${esc(T("version.descartar"))}">×</button>`;
+  $("[data-descartar]", caja).onclick = () => {
+    try { localStorage.setItem(CLAVE_VERSION_DESCARTADA, v.version); } catch { /* solo se oculta en esta sesión */ }
+    S.versionNueva = null;
+    renderAvisoVersion();
+  };
+}
+
+/** Pie de página con la versión (app/version.py, llega en /api/ajustes). */
+function versionApp() {
+  const v = $("#pie")?.dataset.version || "";
+  return S.ajustes?.version || (v.startsWith("{{") ? "" : v);  // data-version: el servidor escribe la versión al servir la página
+}
+function renderPie() { if ($("#pie")) $("#pie").innerHTML = T("pie_html", { version: versionApp() }); }
+
+// ---------------- idioma de la interfaz ----------------
+function llenarSelectorIdioma() {
+  const sel = $("#selIdioma");
+  sel.innerHTML = IDIOMAS_UI.map(l => `<option value="${l}" title="${esc(I18N[l]._nombre)}">${esc(I18N[l]._corto)}</option>`).join("");
+  sel.value = LANG;
+}
+
+/** Cambia el idioma de la interfaz sin recargar: textos fijos, columnas, Biblioteca y Ajustes. Los mensajes
+ *  del servidor llegan en el idioma nuevo desde la siguiente petición (cabecera X-Idioma). */
+function cambiarIdiomaUI(l) {
+  const { tab } = ruta();
+  // Conservar solo el borrador visual; Guardar ajustes sigue siendo quien lo persiste.
+  const marcaPendiente = tab === "ajustes" && S.ajustes && SUBS && $("#aMarcaCtl .marca-ctl")
+    ? { activa: $("#aMarca").checked, estilo: leerMarca($("#aMarcaCtl .marca-ctl")) } : null;
+  guardarIdioma(l);
+  aplicarI18n();
+  renderPie();
+  renderAvisoVersion();
+  $("#subsGuionCtl").innerHTML = "";  // los controles de subtítulos se construyen una vez: se rehacen
+  $("#aSubs2").innerHTML = "";
+  $("#marcaGuionCtl").innerHTML = $("#aMarcaCtl").innerHTML = "";
+  $("#guionCuerpo").innerHTML = "";   // también el "Escribiendo…"
+  if (S.traduccion) $("#bTraducir").innerHTML = `<span class="giro"></span> ${T("tr.traduciendo")}`;
+  if (S.ajustes) renderTodo();
+  if (tab === "biblioteca") cargarBiblioteca();
+  if (tab === "personajes") { renderFormPersonaje(); if (PERS.lista) renderPersonajes(); }
+  if (tab === "estudio") { renderEstudio(); cargarEstudio(true); }
+  if (tab === "ajustes" && S.ajustes) renderAjustes(marcaPendiente);
+  if ($("#ayudaSecciones").children.length) renderAyuda();
+  if (tab === "setup") renderSetup();
+  if (S.ajustes) botonesEscritura();
+  if (S.slug && !S.escritura) $("#estadoGuardado").textContent = "";
+  programarPoll(0);
+}
+
+/** Recuperación explícita: solo se envía la nueva clave del proveedor afectado. */
+async function recuperarDPAPI() {
+  const { data } = await api("GET", "/api/credenciales/estado");
+  if (!data.afectadas.length) return false;
+  const en = LANG === "en";
+  for (const proveedor of data.afectadas) {
+    if (!["anthropic", "openai"].includes(proveedor)) return false;
+    const dlg = document.createElement("dialog");
+    dlg.innerHTML = `<form method="dialog">
+      <h3>${en ? "Replace unreadable API key" : "Reemplazar API key ilegible"}: ${proveedor}</h3>
+      <p>${en ? "Windows could not decrypt this key. Its original value cannot be displayed. Enter a replacement; other keys and settings will be preserved." : "Windows no pudo descifrar esta clave. No es posible mostrar su valor original. Introduce una nueva; las demás claves y ajustes se conservarán."}</p>
+      <input type="password" autocomplete="off" required aria-label="${en ? "New API key" : "Nueva API key"}">
+      <p role="alert"></p>
+      <button type="button" data-cancel>${en ? "Cancel" : "Cancelar"}</button>
+      <button type="submit">${en ? "Protect and replace this key" : "Proteger y reemplazar esta clave"}</button>
+    </form>`;
+    document.body.append(dlg);
+    const ok = await new Promise(resolve => {
+      dlg.oncancel = e => { e.preventDefault(); dlg.close(); resolve(false); };
+      dlg.querySelector("[data-cancel]").onclick = () => { dlg.close(); resolve(false); };
+      dlg.querySelector("form").onsubmit = async e => {
+        e.preventDefault();
+        const input = dlg.querySelector("input"), b = dlg.querySelector('[type="submit"]');
+        b.disabled = true;
+        try {
+          await api("POST", "/api/credenciales/reemplazar", { proveedor, nueva_clave: input.value });
+          input.value = "";
+          dlg.close(); resolve(true);
+        } catch (error) {
+          dlg.querySelector('[role="alert"]').textContent = error.message;
+        } finally { b.disabled = false; }
+      };
+      dlg.showModal();
+    });
+    dlg.querySelector("input").value = "";
+    dlg.remove();
+    if (!ok) return false;
+  }
+  return true;
+}
+
+(async function arrancar() {
+  aplicarI18n();
+  llenarSelectorIdioma();
+  renderPie();
+  try {
+    const [a, m, sb] = await Promise.all([api("GET", "/api/ajustes"), api("GET", "/api/musica"), api("GET", "/api/subtitulos")]);
+    S.ajustes = a.data; S.musica = m.data; SUBS = sb.data;
+    renderPie();
+    cargarFuentesCss();
+  } catch (e) {
+    try {
+      if (await recuperarDPAPI()) { location.reload(); return; }
+    } catch { /* conservar el error inicial, sin valores de credenciales */ }
+    toast(e.message, "error"); return;
+  }
+  conectar();
+  $("#pFuerza").value = PERS.fuerza.defecto;
+  cargarPersonajes().then(() => { if (S.slug) actualizarEstados(); });  // para los avisos de @nombre en el guion
+  nuevo();
+  // app instalada, primera vez: la configuración inicial (versión gratuita: sin clave)
+  if (S.ajustes.instalado && ruta().tab !== "setup") {
+    try {
+      if (!(await api("GET", "/api/setup")).data.visto) location.hash = "#/setup";
+    } catch { /* sin setup: la app sigue */ }
+  }
+  await alNavegar();
+  revisarVersionNueva();  // tampoco bloquea: sin internet, no hay aviso
+  // las voces vienen de internet: no bloquean el arranque
+  api("GET", "/api/voces").then(r => { S.voces = r.data; renderIdea(); if (ruta().tab === "ajustes") renderMotor(); }).catch(() => {});
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+DCRYPTO STUDIO - FREE END USER TERMS OF USE
+
+Dcrypto Studio ("the Software") is published by Crypto Milovat Tech, Tunja, Colombia ("we", "us").
+By installing or using the Software you agree to these terms. If you don't agree, don't install it.
+
+1. FREE USE
+The Software is free of charge. We grant you a personal, non-exclusive, non-transferable, royalty-free
+right to install and use the Software on any number of your own computers, subject to these terms.
+No key, account or payment is required. Voluntary contributions ("pay what you want") are welcome and
+do not change these terms or add any extra rights or obligations.
+
+2. YOUR VIDEOS
+You own the videos, scripts and images you create with the Software. You may use them for personal and
+commercial purposes, including publishing and monetizing them, subject to sections 4 and 5.
+
+3. RESTRICTIONS
+You may not: sell, resell, rent, lend or sublicense the Software; redistribute it, in original or
+modified form, alone or bundled with other products, including by publishing installers or copies on
+other sites; or present it, modified or not, as your own product. To share Dcrypto Studio, share the
+link to the official download page instead (https://dcryptostudio.com).
+
+4. YOUR CONTENT AND AI
+You are responsible for what you create and publish. Do not use the face, voice or likeness of a real
+person without their permission or the right to do so. Do not create content that is illegal, defamatory,
+deceptive or that infringes anyone's rights. Label AI-generated content where platforms require it (for
+example, YouTube's "altered or synthetic content" setting).
+
+5. THIRD-PARTY COMPONENTS
+The Software uses third-party software and AI models that are downloaded separately during setup and are
+licensed by their owners under their own terms, which you also accept: FFmpeg (GPL v3, build by gyan.dev),
+Stable Diffusion XL base 1.0 (CreativeML Open RAIL++-M), SDXL-Turbo (Stability AI Community License),
+IP-Adapter (Apache 2.0), Kokoro-82M (Apache 2.0), espeak-ng (GPL v3, used by Kokoro for Spanish),
+faster-whisper and Whisper (MIT), PyTorch (BSD), Python (PSF License) and others listed in the
+"licenses" folder and in Help > Requirements & credits.
+Some of these licenses limit commercial use (for example, the SDXL-Turbo license above a revenue
+threshold); check them before large-scale commercial use. Online voices use Microsoft's Edge service
+under Microsoft's terms. Section 3 applies only to Dcrypto Studio itself, not to those components.
+
+6. NO WARRANTY
+The Software is provided free of charge and "AS IS", without warranty of any kind, express or implied,
+including fitness for a particular purpose, accuracy of generated content and uninterrupted operation.
+Results depend on your hardware, drivers and internet connection.
+
+7. LIMITATION OF LIABILITY
+To the maximum extent permitted by law, we are not liable for any indirect, incidental or consequential
+damages, loss of data, profits or content, arising from the use of or inability to use the Software.
+Because the Software is provided free of charge, our total liability is limited to the amount, if any,
+you voluntarily contributed in the twelve months before the claim.
+
+8. TERMINATION
+These terms end automatically if you break them. When they end, you must uninstall the Software.
+Videos you created before that remain yours.
+
+9. GENERAL
+These terms are governed by the laws of the Republic of Colombia. If any part is found unenforceable, the
+rest remains in effect. Contact: soporte@dcryptostudio.com - https://dcryptostudio.com

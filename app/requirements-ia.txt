@@ -1,0 +1,14 @@
+# Librerías de IA que el Setup de la app (app/preparar.py) instala en %LOCALAPPDATA%\DcryptoStudio\python\.
+# Versiones fijas: las que funcionan en el equipo de desarrollo (RTX 3050 6 GB). torch sale del índice cu124.
+torch==2.6.0
+diffusers==0.42.1
+transformers==5.22.1
+accelerate==1.15.0
+safetensors==0.8.0
+numpy==2.4.6
+opencv-python-headless==4.14.0.94
+kokoro==0.9.4
+misaki[en]==0.9.4
+faster-whisper==1.2.1
+soundfile==0.14.0
+en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl

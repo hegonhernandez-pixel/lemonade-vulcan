@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 64 64">
+  <rect id="bg" width="64" height="64" rx="15" fill="#f2b84b"/>
+  <defs>
+    <path id="tri" d="M21 14 L51 32 L21 50 Z"/>
+    <!-- el mismo triángulo 2,4 unidades más adentro (escalado desde su incentro): el paisaje queda con un
+         marco oscuro y el borde del play no se rompe; a 48 px y menos se sigue leyendo como paisaje -->
+    <path id="tri-in" d="M23.4 18.24 L46.34 32 L23.4 45.76 Z"/>
+    <clipPath id="clip"><use href="#tri-in"/></clipPath>
+  </defs>
+  <!-- el play, 2 unidades a la izquierda: centrado a la vista (su caja queda en x=34, un poco a la derecha a propósito) -->
+  <g transform="translate(-2 0)">
+    <use href="#tri" fill="#0f1115"/>
+    <g clip-path="url(#clip)">
+      <circle cx="30" cy="25" r="2.6" fill="#f2b84b"/>
+      <!-- montañas 4 unidades más arriba: así los dos picos caben dentro del marco -->
+      <g transform="translate(0 -4)">
+        <path d="M16 47 L26 38.5 L31 43 L36 37.5 L52 49 L52 58 L16 58 Z" fill="#f2b84b"/>
+        <path d="M16 51 L24 45 L29 49 L34 44.5 L52 54 L52 58 L16 58 Z" fill="#c98f2c"/>
+      </g>
+    </g>
+  </g>
+</svg>
