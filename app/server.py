@@ -832,7 +832,7 @@ def _personaje_dict(p: "personajes.Personaje") -> dict:
 @api.get("/api/personajes")
 def listar_personajes():
     return {"personajes": [_personaje_dict(p) for p in personajes.listar()],
-            "solo_alta": not imagenes.TURBO_CON_PERSONAJE, "segundos_alta": imagenes.SEG_ALTA_PERSONAJE,
+            "solo_alta": not imagenes.TURBO_CON_PERSONAJE, "segundos_alta": None if vulkan.activo() else imagenes.SEG_ALTA_PERSONAJE,
             "fuerza": {"min": personajes.FUERZA_MIN, "max": personajes.FUERZA_MAX, "defecto": personajes.FUERZA_DEFECTO},
             "max_fotos": personajes.MAX_FOTOS}
 

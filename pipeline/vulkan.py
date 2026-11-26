@@ -51,6 +51,10 @@ def estado():
     linea = next((l.strip() for l in salida.splitlines() if re.search(rf"\b{elegido}\b", l, re.I)), "")
     return {"motor": "Stable Diffusion.cpp · Vulkan", "dispositivo": linea or None,
             "binario": bool(ejecutable),
+            "personajes": {nombre: bool(valor and Path(valor).expanduser().is_file()) for nombre, valor in {
+                "IP-Adapter Plus SDXL": os.environ.get("COMPRESSO_IP_ADAPTER", ""),
+                "CLIP Vision ViT-H": os.environ.get("COMPRESSO_CLIP_VISION", ""),
+            }.items()},
             "modelos": {k: {"nombre": v[0], "configurado": bool(p and p.is_file())}
                         for k, v in PERFILES.items() for p in [ruta_modelo(k)]}}
 
@@ -59,7 +63,10 @@ def generar(prompt, perfil, size, seed, *, negativo="", pasos=None, foto=None,
             intensidad=0.5, referencias=(), fuerza=0.5):
     exe, modelo = binario(), ruta_modelo(perfil)
     if not exe or not modelo or not modelo.is_file():
-        raise RuntimeError(f"Configura sd-cli y COMPRESSO_{PERFILES[perfil][1]} en el entorno del servidor.")
+        nombre, variable, _, _ = PERFILES[perfil]
+        if not exe:
+            raise RuntimeError("No se encuentra sd-cli. Configura COMPRESSO_SD_CLI en .env y reinicia.")
+        raise RuntimeError(f"Falta el archivo de {nombre}. Configura COMPRESSO_{variable} en .env y reinicia. En Estudio puedes elegir un modelo disponible.")
     _, _, por_defecto, cfg = PERFILES[perfil]
     w, h = size
     if perfil in ("rapida", "sd_turbo"):

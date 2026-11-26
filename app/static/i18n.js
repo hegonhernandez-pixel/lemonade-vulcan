@@ -14,6 +14,15 @@
  */
 const I18N = /*JSON*/{
 "es": {
+  "linux.personaje": "Los personajes usan SDXL Base 1.0 con IP-Adapter Plus y CLIP Vision. Configura los tres archivos en .env y reinicia.",
+  "linux.pie_html": "CompressOS Studio · v{version}",
+  "linux.clave_ia": "Para generar y reescribir guiones, configura una clave de API para Gemini o OpenAI, o elige Ollama con un modelo instalado.",
+  "linux.ayuda_requisitos": "<p>Linux con controlador Vulkan compatible, Python, FFmpeg y un ejecutable sd-cli compilado con Vulkan. Configura las rutas de los modelos en .env y consulta su estado en Equipo.</p><p>Los componentes y modelos conservan sus respectivas licencias. Revisa los archivos de licencia incluidos y los términos del modelo que descargues.</p>",
+  "linux.ayuda_imagenes": "<p>Selecciona en Ajustes un modelo disponible. Los prompts visuales y el estilo comparten 40 palabras. Los subtítulos se cuentan aparte.</p>",
+  "linux.ayuda_personajes": "<p>Los personajes utilizan SDXL Base 1.0, IP-Adapter Plus SDXL y CLIP Vision ViT-H. Configura los tres archivos en .env. Cada imagen utiliza una referencia.</p>",
+  "linux.ayuda_estudio": "<p>En Estudio de imágenes elige uno de los modelos disponibles en Equipo. Para usar una foto de referencia, súbela antes de generar.</p>",
+  "linux.ayuda_ajustes": "<p>Configura voz, modelo y proveedor de guiones. Los archivos de modelos y el ejecutable se establecen en .env. Reinicia el servidor después de modificarlos.</p>",
+
   "visual.ajustes": "El prompt, la descripción del personaje y este estilo comparten 40 palabras visuales. Los subtítulos tienen su propio conteo.",
   "visual.escena": "Imagen: {palabras}/{limite} palabras con estilo y personaje.",
   "visual.estudio": "Imagen: {palabras}/{limite} palabras.",
@@ -744,6 +753,15 @@ const I18N = /*JSON*/{
 },
 
 "en": {
+  "linux.personaje": "Characters use SDXL Base 1.0 with IP-Adapter Plus and CLIP Vision. Configure all three files in .env and restart.",
+  "linux.pie_html": "CompressOS Studio · v{version}",
+  "linux.clave_ia": "For script writing, configure a Gemini or OpenAI API key, or select Ollama with an installed model.",
+  "linux.ayuda_requisitos": "<p>Linux, a compatible Vulkan driver, Python, FFmpeg and sd-cli built with Vulkan are required. Configure model paths in .env and check their status in System.</p><p>Components and models retain their respective licenses. Review included license files and model terms.</p>",
+  "linux.ayuda_imagenes": "<p>Select an available model in Settings. Image prompts and style share 40 words. Subtitles are counted separately.</p>",
+  "linux.ayuda_personajes": "<p>Characters require SDXL Base 1.0, IP-Adapter Plus SDXL and CLIP Vision ViT-H. Configure all three files in .env. Each image uses one reference.</p>",
+  "linux.ayuda_estudio": "<p>Choose an available model in Image Studio. Upload a reference photo before generating if needed.</p>",
+  "linux.ayuda_ajustes": "<p>Configure voice, image model and script provider. Set model and executable paths in .env and restart the server.</p>",
+
   "visual.ajustes": "The prompt, character description and style share a 40-word image budget. Subtitles are counted separately.",
   "visual.escena": "Image: {palabras}/{limite} words including style and character.",
   "visual.estudio": "Image: {palabras}/{limite} words.",

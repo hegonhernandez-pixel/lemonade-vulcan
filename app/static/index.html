@@ -765,7 +765,7 @@ audio { width:100%; margin:8px 0; }
             <span class="clave-estado"><span data-clave-estado="openai"></span><button class="btn fantasma chico" data-quitar-clave="openai" data-i18n="aj.ia_quitar"></button></span></label>
           <label class="campo"><span data-i18n="aj.ia_modelo"></span><input id="aOpenaiModelo" type="text" spellcheck="false"></label>
         </div>
-        <div data-ia="gemini">
+        <div data-ia="gemini"><p class="nota" data-i18n="linux.clave_ia"></p>
           <label class="campo"><span data-i18n="aj.ia_clave"></span>
             <input id="aGeminiKey" type="password" autocomplete="off" spellcheck="false">
             <span class="clave-estado"><span data-clave-estado="gemini"></span><button class="btn fantasma chico" data-quitar-clave="gemini" data-i18n="aj.ia_quitar"></button></span></label>
@@ -1823,7 +1823,7 @@ function actualizarEstados() {
     else if (ms.length > 1) av.push(["", T("escena.av_personaje_varios", { n: i + 1, nombre: ms[0] })]);
   });
   if (PERS.soloAlta && d.escenas.some(e => !e.media && mencionesDe(e.prompt).length))
-    av.push(["", T("guion.av_personaje_alta")]);
+    av.push(["", T(S.ajustes.linux ? "linux.personaje" : "guion.av_personaje_alta")]);
   const ul = $("#gAvisos");
   if (ul) ul.innerHTML = av.map(([c, t]) => `<li class="${c}">${esc(t)}</li>`).join("");
   renderMusicaInfo();
@@ -2555,7 +2555,7 @@ async function cargarPersonajes() {
 }
 
 function renderPersonajes() {
-  $("#persSoloAlta").textContent = PERS.soloAlta ? T("pers.solo_alta", { s: PERS.segAlta }) : "";
+  $("#persSoloAlta").textContent = PERS.soloAlta ? T(S.ajustes.linux ? "linux.personaje" : "pers.solo_alta", { s: PERS.segAlta }) : "";
   const lista = PERS.lista || [];
   $("#persLista").innerHTML = lista.length ? lista.map(p => {
     const simple = p.modalidad === "foto";
@@ -2748,6 +2748,7 @@ async function renderAjustes(marcaPendiente = null) {
       $("#sistema").innerHTML = [
         [s.vulkan.motor, s.vulkan.dispositivo || T("sis.no_detectada")],
         ...Object.values(s.vulkan.modelos).map(m => [m.nombre, T(m.configurado ? "comp.configurado" : "comp.sin_modelo")]),
+        ...Object.entries(s.vulkan.personajes).map(([nombre, listo]) => [nombre, T(listo ? "comp.configurado" : "comp.sin_modelo")]),
       ].map(([nombre, estado]) => `<div class="dato"><span>${esc(nombre)}</span><span>${esc(estado)}</span></div>`).join("");
       return;
     }
@@ -3300,7 +3301,7 @@ function versionApp() {
   const v = $("#pie")?.dataset.version || "";
   return S.ajustes?.version || (v.startsWith("{{") ? "" : v);  // data-version: el servidor escribe la versión al servir la página
 }
-function renderPie() { if ($("#pie")) $("#pie").innerHTML = T("pie_html", { version: versionApp() }); }
+function renderPie() { if ($("#pie")) $("#pie").innerHTML = T(S.ajustes?.linux ? "linux.pie_html" : "pie_html", { version: versionApp() }); }
 
 // ---------------- idioma de la interfaz ----------------
 function llenarSelectorIdioma() {
@@ -3384,6 +3385,12 @@ async function recuperarDPAPI() {
   try {
     const [a, m, sb] = await Promise.all([api("GET", "/api/ajustes"), api("GET", "/api/musica"), api("GET", "/api/subtitulos")]);
     S.ajustes = a.data; S.musica = m.data; SUBS = sb.data;
+    if (a.data.linux) {
+      for (const idioma of ["es", "en"]) {
+        for (const seccion of ["requisitos", "imagenes", "personajes", "estudio", "ajustes"])
+          I18N[idioma][`ayuda.${seccion}_html`] = I18N[idioma][`linux.ayuda_${seccion}`];
+      }
+    }
     $("#bSalirSesion").hidden = !a.data.auth;
     $("#estadoMotor").hidden = !a.data.linux;
     if (a.data.linux) {
